@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Planning/handoff docs (personal convention, not for sharing)
+Docs/WIP/
+
 # User-specific files
 *.rsuser
 *.suo
