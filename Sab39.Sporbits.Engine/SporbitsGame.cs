@@ -1,31 +1,35 @@
+using Sab39.Sabric.Engine.Aether;
+
+using nkast.Aether.Physics2D.Controllers;
+
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
-/// The game itself. Currently only tick accounting - physics, the world and game objects
-/// arrive once the Sabric.Engine seam is designed.
+/// The game itself: a player planet, a puck orbiting it, and the mutual gravity between them.
 /// </summary>
-public sealed class SporbitsGame
+public sealed class SporbitsGame : GameBase
 {
-    public int Ticks { get; private set; }
-    public long FirstTickStamp { get; private set; }
-    public long LastTickStamp { get; private set; }
-    public long Delta { get; private set; }
-    public long TotalMillis => LastTickStamp - FirstTickStamp;
+    public PlayerPlanet Player => field ??= new(this, default);
+    public PuckPlanet Puck => field ??= new(this, new(10, 0)) { Velocity = new(0, -4) };
 
-    public void Init() => Ticks = 0;
+    public GravityController Gravity => field ??= new(8);
+    public PlayerInputController PlayerInput => field ??= new(Player, 16);
 
-    public void Tick(long tickStamp)
+    public override void Init()
     {
-        if (Ticks == 0)
-        {
-            FirstTickStamp = tickStamp;
-            LastTickStamp = tickStamp;
-        }
+        base.Init();
 
-        Ticks++;
-        Delta = tickStamp - LastTickStamp;
-        LastTickStamp = tickStamp;
+        World.Add(Gravity);
 
-        // TODO: step the physics world and update game objects.
+        AddGameObject(Player);
+        AddGameObject(Puck);
+
+        World.Add(PlayerInput);
+    }
+
+    public override void AddGameObject(GameObjectBase obj)
+    {
+        base.AddGameObject(obj);
+        Gravity.AddBody(obj.Body);
     }
 }

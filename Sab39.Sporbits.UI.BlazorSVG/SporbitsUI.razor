@@ -1,6 +1,9 @@
 <div class="sporbits-container" @ref="containerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
     <div class="sporbits-stats">
         <div>Keys: @pressedKeysMsg</div>
+        @* Stands in for seeing the planets themselves, until the views are wired up. *@
+        <div>Player: @Describe(game.Player.Position)</div>
+        <div>Puck: @Describe(game.Puck.Position)</div>
         <div>Ticks: @game.Ticks</div>
         <div>Runtime: @game.TotalMillis ms (@game.FirstTickStamp to @game.LastTickStamp)</div>
         <div>Delta: @game.Delta ms</div>
@@ -27,8 +30,9 @@
                 </clipPath>
             </defs>
             <g clip-path="url(#viewport)">
-                @* Placeholder standing in for the game object loop, so the viewport is
-                   visibly working. Replaced once game objects and the view seam exist. *@
+                @* Placeholder standing in for the game object loop, so the viewport is visibly
+                   working. The game objects and their views both exist now; what's missing is
+                   the seam that picks a view for an object. *@
                 <circle class="placeholder" cx="0" cy="0" r="8" />
             </g>
         </svg>
