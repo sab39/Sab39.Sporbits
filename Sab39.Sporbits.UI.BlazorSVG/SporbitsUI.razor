@@ -1,0 +1,36 @@
+<div class="sporbits-container" @ref="containerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
+    <div class="sporbits-stats">
+        <div>Keys: @pressedKeysMsg</div>
+        <div>Ticks: @game.Ticks</div>
+        <div>Runtime: @game.TotalMillis ms (@game.FirstTickStamp to @game.LastTickStamp)</div>
+        <div>Delta: @game.Delta ms</div>
+        <div>
+            FPS:
+            @if (game.Delta > 0)
+            {
+                @(1000 / game.Delta)
+            }
+        </div>
+        <div>
+            Average FPS:
+            @if (game.TotalMillis > 0)
+            {
+                @(game.Ticks * 1000 / game.TotalMillis)
+            }
+        </div>
+    </div>
+    <div class="sporbits-game-container">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="@ViewLeft @ViewTop @ViewWidth @ViewHeight" style="aspect-ratio: @ViewWidth/@ViewHeight">
+            <defs>
+                <clipPath id="viewport">
+                    <rect x="@ViewLeft" y="@ViewTop" width="@ViewWidth" height="@ViewHeight" />
+                </clipPath>
+            </defs>
+            <g clip-path="url(#viewport)">
+                @* Placeholder standing in for the game object loop, so the viewport is
+                   visibly working. Replaced once game objects and the view seam exist. *@
+                <circle class="placeholder" cx="0" cy="0" r="8" />
+            </g>
+        </svg>
+    </div>
+</div>
