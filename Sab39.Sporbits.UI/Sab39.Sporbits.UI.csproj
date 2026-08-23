@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sab39.Sporbits.Engine\Sab39.Sporbits.Engine.csproj" />
+    <ProjectReference Include="..\..\Sab39.Sabric\Sab39.Sabric.UI\Sab39.Sabric.UI.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
