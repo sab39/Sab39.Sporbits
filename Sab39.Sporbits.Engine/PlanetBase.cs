@@ -1,7 +1,8 @@
+using System.Numerics;
+
 using Sab39.Sabric.Engine.Aether;
 
 using nkast.Aether.Physics2D.Collision.Shapes;
-using nkast.Aether.Physics2D.Common;
 using nkast.Aether.Physics2D.Dynamics;
 
 namespace Sab39.Sporbits.Engine;
@@ -9,8 +10,8 @@ namespace Sab39.Sporbits.Engine;
 /// <summary>
 /// A round body with mass. Everything in Sporbits is one of these.
 /// </summary>
-public abstract class PlanetBase(GameBase game, Vector2 initialPosition = default, float initialRadius = 1, float initialDensity = 1)
-    : GameObjectBase(game, initialPosition)
+public abstract class PlanetBase(SporbitsGame game, Vector2 initialPosition = default, float initialRadius = 1, float initialDensity = 1)
+    : AetherGameObjectBase(game, initialPosition)
 {
     public CircleShape Circle { get; } = new(initialRadius, initialDensity);
 
