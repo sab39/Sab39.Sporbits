@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sab39.Sporbits.Core\Sab39.Sporbits.Core.csproj" />
     <ProjectReference Include="..\..\Sab39.Sabric\Sab39.Sabric.Engine\Sab39.Sabric.Engine.csproj" />
+    <ProjectReference Include="..\..\Sab39.Sabric\Sab39.Sabric.Engine.Aether\Sab39.Sabric.Engine.Aether.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
