@@ -1,5 +1,3 @@
-using System.Numerics;
-
 using Sab39.Sabric.UI.BlazorSVG;
 using Sab39.Sporbits.Engine;
 
@@ -14,16 +12,12 @@ public sealed partial class SporbitsUI
 
     private readonly SporbitsGame game = new();
 
+    [Inject]
+    private GameObjectViewResolver views { get; set; } = default!;
+
     private readonly SortedSet<string> pressedKeys = [];
 
     private string pressedKeysMsg => string.Join(",", this.pressedKeys);
-
-    /// <summary>
-    /// Two decimal places rather than the seven significant digits a float prints by default -
-    /// the stats panel sizes itself to its contents, and a position that changes width every
-    /// frame makes the whole block flicker.
-    /// </summary>
-    private static string Describe(Vector2 position) => $"{position.X:F2}, {position.Y:F2}";
 
     public float ViewWidth { get; } = 200;
     public float ViewHeight { get; } = 150;
