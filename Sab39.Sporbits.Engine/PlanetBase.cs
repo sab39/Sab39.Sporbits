@@ -13,6 +13,8 @@ namespace Sab39.Sporbits.Engine;
 public abstract class PlanetBase(SporbitsGame game, Vector2 initialPosition = default, float initialRadius = 1, float initialDensity = 1)
     : AetherGameObjectBase(game, initialPosition)
 {
+    public override SporbitsGame Game => (SporbitsGame)base.Game;
+
     public CircleShape Circle { get; } = new(initialRadius, initialDensity);
 
     public Fixture Fixture => field ??= Body.FixtureList[0];
