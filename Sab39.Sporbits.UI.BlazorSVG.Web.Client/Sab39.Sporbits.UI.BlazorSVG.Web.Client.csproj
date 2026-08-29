@@ -17,4 +17,14 @@
     <ProjectReference Include="..\Sab39.Sporbits.UI.BlazorSVG\Sab39.Sporbits.UI.BlazorSVG.csproj" />
   </ItemGroup>
 
+  <!--
+    Writes AddGeneratedViews(). It belongs here rather than in the UI.BlazorSVG class library
+    because the views are .razor files: their classes are another source generator's output, and a
+    source generator cannot see one. They are only visible as ordinary metadata from a project that
+    references the assembly they ended up in - which is also the composition root that needs them.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Sab39.Sabric\Sab39.Sabric.UI.BlazorSVG.CodeGen\Sab39.Sabric.UI.BlazorSVG.CodeGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

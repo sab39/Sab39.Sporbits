@@ -10,11 +10,13 @@
     <Project Path="../Sab39.Core/Sab39.Core/Sab39.Core.csproj" />
   </Folder>
   <Folder Name="/Sab39.Sabric/">
+    <Project Path="../Sab39.Sabric/Sab39.Sabric.CodeGen/Sab39.Sabric.CodeGen.csproj" />
     <Project Path="../Sab39.Sabric/Sab39.Sabric.Core/Sab39.Sabric.Core.csproj" />
     <Project Path="../Sab39.Sabric/Sab39.Sabric.Engine/Sab39.Sabric.Engine.csproj" />
     <Project Path="../Sab39.Sabric/Sab39.Sabric.Engine.Aether/Sab39.Sabric.Engine.Aether.csproj" />
     <Project Path="../Sab39.Sabric/Sab39.Sabric.UI/Sab39.Sabric.UI.csproj" />
     <Project Path="../Sab39.Sabric/Sab39.Sabric.UI.BlazorSVG/Sab39.Sabric.UI.BlazorSVG.csproj" />
+    <Project Path="../Sab39.Sabric/Sab39.Sabric.UI.BlazorSVG.CodeGen/Sab39.Sabric.UI.BlazorSVG.CodeGen.csproj" />
   </Folder>
   <Project Path="Sab39.Sporbits.Core/Sab39.Sporbits.Core.csproj" />
   <Project Path="Sab39.Sporbits.Engine/Sab39.Sporbits.Engine.csproj" />

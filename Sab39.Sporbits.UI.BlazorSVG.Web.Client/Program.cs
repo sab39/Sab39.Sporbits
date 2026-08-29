@@ -1,15 +1,14 @@
 using Sab39.Sabric.UI.BlazorSVG;
-using Sab39.Sporbits.Engine;
-using Sab39.Sporbits.UI.BlazorSVG;
+using Sab39.Sporbits.UI.BlazorSVG.Web.Client;
 
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Every type argument here is closed by the compiler, so the whole seam stays reflection-free.
-// The view registrations are what a source generator is eventually meant to emit.
+// Every type argument in the generated registrations is closed by the compiler, so the whole seam
+// stays reflection-free. The using above is for AddGeneratedViews, which the generator writes into
+// this project's own root namespace.
 builder.Services.AddGameObjectViewResolver()
-    .AddGameObjectView<PlayerPlanet, PlayerPlanetView>()
-    .AddGameObjectView<PuckPlanet, PuckPlanetView>();
+    .AddGeneratedViews();
 
 await builder.Build().RunAsync();
