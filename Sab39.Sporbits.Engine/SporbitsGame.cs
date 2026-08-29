@@ -6,7 +6,7 @@ using Sab39.Sabric.Engine;
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
-/// The game itself: a player planet, a puck orbiting it, and the mutual gravity between them.
+/// A game of Sporbits.
 /// </summary>
 public sealed class SporbitsGame : AetherGameBase
 {
@@ -16,10 +16,8 @@ public sealed class SporbitsGame : AetherGameBase
     public GravityController Gravity => field ??= new(8);
     public PlayerInputController PlayerInput => field ??= new(Player, 16);
 
-    public override void Init()
+    protected override void OnInit()
     {
-        base.Init();
-
         World.Add(Gravity);
 
         AddGameObject(Player);
@@ -28,10 +26,5 @@ public sealed class SporbitsGame : AetherGameBase
         World.Add(PlayerInput);
     }
 
-    public override void AddGameObject(GameObjectBase obj)
-    {
-        if (obj is not AetherGameObjectBase aetherObj) throw new ArgumentException("Not a valid object for this game", nameof(obj));
-        base.AddGameObject(aetherObj);
-        Gravity.AddBody(aetherObj.Body);
-    }
+    protected override void OnAddGameObject(AetherGameObjectBase obj) => Gravity.AddBody(obj.Body);
 }
