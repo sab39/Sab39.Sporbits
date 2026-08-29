@@ -7,7 +7,7 @@ namespace Sab39.Sporbits.UI.BlazorSVG;
 /// Shared geometry for the planet views - everything an SVG circle needs, and nothing about
 /// how any particular planet looks.
 /// </summary>
-public abstract class PlanetView<TPlanet> : GameObjectView<TPlanet>
+public abstract class PlanetViewBase<TPlanet> : GameObjectViewBase<TPlanet>
     where TPlanet : PlanetBase
 {
     public TPlanet Planet => GameObject;

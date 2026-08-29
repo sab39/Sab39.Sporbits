@@ -1,0 +1,16 @@
+@* Display only: the shared box, and which readouts go in it. Both children invalidate
+   themselves, so nothing here re-renders when either of them changes. *@
+<div class="sporbits-stats">
+    <PressedKeysView PressedKeys="PressedKeys" />
+    <GameStatsView Game="Game" />
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public GameBase Game { get; set; } = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public PressedKeys PressedKeys { get; set; } = default!;
+}
