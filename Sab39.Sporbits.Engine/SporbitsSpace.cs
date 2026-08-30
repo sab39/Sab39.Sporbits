@@ -1,5 +1,3 @@
-using System.Numerics;
-
 using Sab39.Sabric.Engine;
 using Sab39.Sabric.Engine.Aether;
 
@@ -44,24 +42,11 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     public bool IsOver { get; private set; }
 
     /// <remarks>
-    /// Slack on the crash test, so contact registers on the frame it happens rather than a frame
-    /// or two later.
-    ///
-    /// Testing by distance at all is a placeholder for real collision events, which are wanted and
-    /// wait on deciding how a collision reaches game code through GameObjectBase without the
-    /// abstract layer learning that Aether exists. It survives in the meantime only because nothing
-    /// here is bouncy: two planets that touch stay touching, so there is no way to be in contact
-    /// between one tick and the next without still being in contact at the next tick.
+    /// Between the two of them rather than "something hit the player", because a goal and an
+    /// obstacle will both want their own answer to being hit and neither of them is this one.
     /// </remarks>
-    private const float CrashTolerance = 0.1f;
-
-    protected override void OnAdvance(long delta)
+    protected override void OnCollision(CollisionInfo collision)
     {
-        base.OnAdvance(delta);
-
-        // After the base advance, not before: SyncFromWorld is what makes these positions this
-        // tick's rather than last tick's.
-        var crashDistance = Player.Radius + Puck.Radius + CrashTolerance;
-        if (Vector2.Distance(Player.Position, Puck.Position) <= crashDistance) IsOver = true;
+        if (collision.Involves(Player, Puck)) IsOver = true;
     }
 }
