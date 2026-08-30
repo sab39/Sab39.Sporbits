@@ -26,6 +26,10 @@ public abstract class PlanetBase : SporbitsObjectBase
         Body.LinearDamping = 0;
 
         Body.CreateFixture(Circle);
+
+        // After the fixture, not before: CreateFixture resets the body's mass from what its shapes
+        // come to, so a value set first would be silently thrown away.
+        Mass = float.Pi * Radius * Radius * Density;
     }
 
     /// <remarks>

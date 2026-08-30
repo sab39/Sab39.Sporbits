@@ -14,7 +14,15 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     public PuckPlanet Puck => field ??= new() { Position = new(10, 0), Velocity = new(0, -4) };
 
     public GravityController Gravity => field ??= new(8);
-    public PlayerInputController PlayerInput => field ??= new(Player, 16);
+
+    /// <remarks>
+    /// Held by the space rather than by the effect that reads it, so that the UI has somewhere to
+    /// hand a source that isn't inside an effect - and so that more than one effect could read the
+    /// same input if the game ever wanted that.
+    /// </remarks>
+    public PlayerInput PlayerInput => field ??= new();
+
+    public PlayerThrustEffect PlayerThrust => field ??= new(Player, PlayerInput, 16);
 
     /// <summary>
     /// Fills the space with what a game of Sporbits starts with.
@@ -26,11 +34,11 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public void Populate()
     {
-        // Controllers first, so that nothing attaching can find the gravity it registers with
-        // missing. Nothing today would - the property builds it on demand - but the order that
-        // needs no such argument is free.
+        // Effects first, so that nothing attaching can find the gravity it registers with missing.
+        // Nothing today would - the property builds it on demand - but the order that needs no such
+        // argument is free.
         AddController(Gravity);
-        AddController(PlayerInput);
+        AddEffect(PlayerThrust);
 
         Add(Player);
         Add(Puck);
