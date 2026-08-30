@@ -10,7 +10,7 @@ namespace Sab39.Sporbits.Engine;
 /// Living in Sporbits.Engine is provisional. This is the translation from player intent into a
 /// force on the world, which is arguably an input concern rather than an engine one - it may
 /// well be the thing that belongs in Sporbits.UI, which is otherwise an empty project nobody
-/// has found a use for. See the open questions in Docs/WIP/sporbits-revival.md.
+/// has found a use for. See the open questions in Docs/architecture.md in the Sabric repo.
 /// </remarks>
 public sealed class PlayerInputController(PlayerPlanet planet, float strength) : AetherInputControllerBase
 {

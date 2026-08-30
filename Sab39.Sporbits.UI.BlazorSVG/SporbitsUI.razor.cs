@@ -6,11 +6,18 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Sab39.Sporbits.UI.BlazorSVG;
 
-public sealed partial class SporbitsUI
+public sealed partial class SporbitsUI : IDisposable
 {
     private ElementReference containerDiv;
 
     private readonly SporbitsGame game = new();
+
+    /// <summary>
+    /// Raised once, when the game ends. The tick loop stops in the same breath, so what stays on
+    /// screen is the frame the game ended on.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnGameOver { get; set; }
 
     private readonly PressedKeys pressedKeys = new();
 
@@ -51,11 +58,34 @@ public sealed partial class SporbitsUI
     private void OnKeyDown(KeyboardEventArgs args) => this.pressedKeys.Add(args.Code);
     private void OnKeyUp(KeyboardEventArgs args) => this.pressedKeys.Remove(args.Code);
 
-    private void ScheduleGameTick() => BrowserEnvironment.RequestAnimationFrame(TriggerGameTick);
+    private void ScheduleGameTick()
+    {
+        if (this.isDisposed) return;
+
+        BrowserEnvironment.RequestAnimationFrame(TriggerGameTick);
+    }
 
     private void TriggerGameTick(double tickStamp)
     {
         this.game.Tick((long)tickStamp);
+
+        if (this.game.IsOver)
+        {
+            // Nothing to await it with - the loop is driven by a void callback from JS - and
+            // nothing left for this component to do once it has said so.
+            OnGameOver.InvokeAsync();
+            return;
+        }
+
         ScheduleGameTick();
     }
+
+    private bool isDisposed;
+
+    /// <remarks>
+    /// A scheduled animation frame cannot be cancelled, so the loop is stopped by declining to
+    /// schedule the next one. Without this, a component torn down mid-game would go on ticking a
+    /// game nothing is rendering.
+    /// </remarks>
+    public void Dispose() => this.isDisposed = true;
 }

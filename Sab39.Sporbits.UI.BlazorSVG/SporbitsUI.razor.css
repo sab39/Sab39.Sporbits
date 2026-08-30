@@ -1,10 +1,9 @@
+/* Background and text colour belong to the shell around this, which is on screen in every state. */
 .sporbits-container {
     position: absolute;
     inset: 0;
     overflow: hidden;
     margin: 0;
-    background-color: rgb(16 16 16 / 0.7);
-    color: white;
 }
 
 .sporbits-game-container {

@@ -1,0 +1,24 @@
+@* Playing and GameOver share a branch on purpose: the game stays on screen behind the notice,
+   frozen on the frame it crashed on, and only leaving for the start screen tears it down. *@
+<div class="sporbits-shell">
+    @if (this.state is ShellState.NotStarted)
+    {
+        <div class="sporbits-start">
+            <button @ref="startButton" @onclick="StartGame">Start game</button>
+        </div>
+    }
+    else
+    {
+        <SporbitsUI OnGameOver="HandleGameOver" />
+    }
+
+    @if (this.state is ShellState.GameOver)
+    {
+        @* tabindex is what lets the notice hold focus, which is what makes "a keypress anywhere"
+           reach a handler at all; inset:0 is what does the same for a click. *@
+        <div class="sporbits-game-over" style="--fade-duration: @(FadeMillis)ms" tabindex="-1"
+             @ref="gameOverNotice" @onclick="Dismiss" @onkeydown="Dismiss">
+            <span>Game over</span>
+        </div>
+    }
+</div>
