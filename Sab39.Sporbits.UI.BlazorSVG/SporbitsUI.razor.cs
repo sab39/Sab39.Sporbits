@@ -12,9 +12,6 @@ public sealed partial class SporbitsUI
 
     private readonly SporbitsGame game = new();
 
-    [Inject]
-    private GameObjectViewResolver views { get; set; } = default!;
-
     private readonly PressedKeys pressedKeys = new();
 
     public float ViewWidth { get; } = 200;
@@ -32,13 +29,11 @@ public sealed partial class SporbitsUI
     }
 
     /// <remarks>
-    /// The root renders once and then holds still. Every part of it that changes is a child
-    /// component that invalidates itself, so the only renders left to suppress are the ones Blazor
-    /// raises automatically after the key handlers below - and those would take the whole object
-    /// list down with them.
-    ///
-    /// It can't stay flat false forever: this is where a change to the game's object collection
-    /// will have to make the root render again. Nothing spawns or despawns yet.
+    /// The root renders once and then holds still, for good. Every part of it that changes is a
+    /// child component that invalidates itself - the object list included, which is why this can be
+    /// a flat false rather than something that has to notice a spawn. What it suppresses is the
+    /// render Blazor raises automatically after the key handlers below, which would otherwise take
+    /// the whole tree down with it at the OS key-repeat rate.
     /// </remarks>
     protected override bool ShouldRender() => false;
 

@@ -8,10 +8,7 @@
                 </clipPath>
             </defs>
             <g clip-path="url(#viewport)">
-                @foreach (var obj in game.GameObjects)
-                {
-                    @views.Render(obj)
-                }
+                <GameObjectsView Items="game.GameObjects" />
             </g>
         </svg>
     </div>

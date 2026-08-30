@@ -27,4 +27,11 @@ public sealed class SporbitsGame : AetherGameBase
     }
 
     protected override void OnAddGameObject(AetherGameObjectBase obj) => Gravity.AddBody(obj.Body);
+
+    // Aether's GravityController has no RemoveBody, only the list AddBody appends to.
+    protected override void OnRemoveGameObject(AetherGameObjectBase obj)
+    {
+        Gravity.Bodies.Remove(obj.Body);
+        base.OnRemoveGameObject(obj);
+    }
 }
