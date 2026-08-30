@@ -27,32 +27,6 @@ is gravity. *Sporbits* = sport + orbits.
 of `Sab39.Core`. Building Sporbits therefore validates all three, and test-building the
 other two separately proves nothing the Sporbits build hasn't already.
 
-## Running the app: don't
-
-**Claude builds; Stuart runs.** Verify with `dotnet build` and then hand over — do not
-start a dev server, drive the app in the in-app browser, or try to debug it there.
-
-Two reasons, both demonstrated rather than theoretical:
-
-- The in-app browser does not drive `requestAnimationFrame` the way a real browser
-  does. The tick counter reads a permanent 0 there while working fine in a real
-  browser, so what looks like a bug in the game loop is an artefact of the harness.
-  Time spent debugging it is time spent debugging the wrong thing.
-- A dev server started by Claude holds a lock on the build output, which makes the
-  Visual Studio build fail with a file-in-use error until it's stopped.
-
-There is deliberately no `.claude/launch.json` in this repo. If one appears, it's a
-mistake.
-
-### When Stuart runs it: not under the debugger
-
-Running from the VS debugger drops the frame rate hard for a moment roughly once a second —
-presumably the browser talking to the IDE's debugging services. **Run without debugging for
-anything that's meant to be playable.**
-
-This is an operational note rather than a project one, and probably belongs somewhere more
-permanent than a WIP doc eventually.
-
 ## Game-specific design decisions
 
 Framework-level decisions are in Sabric's `Docs/architecture.md`. What's here is Sporbits' own.
