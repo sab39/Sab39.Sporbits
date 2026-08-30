@@ -57,26 +57,101 @@ The general design question — what start, end and levels should look like in S
 item in Sabric's architecture doc. What exists now is entirely Sporbits-side:
 
 **A game exists only while `SporbitsUI` is in the render tree.** `SporbitsShell` is the outermost
-component and holds a three-state enum: not started, playing, over. `SporbitsUI` builds its own
-`SporbitsSession` as a field initializer, so rendering it *is* starting a game and dropping it out of
-the tree *is* ending one. Blazor's component lifetime is the entire mechanism — there is no reset
-path, nothing to tear down by hand, and no state that can survive a round trip through the start
-screen. Playing and game-over share a render branch, so the crashed frame stays on screen behind
-the notice; only returning to the start screen removes the game.
+component and holds a four-state enum: not started, choosing a level, playing, over. `SporbitsUI`
+builds its own `SporbitsSession` around the level it is handed, so rendering it *is* starting a game
+and dropping it out of the tree *is* ending one. Blazor's component lifetime is the entire mechanism —
+there is no reset path, nothing to tear down by hand, and no state that can survive a round trip
+through the menu. Playing and game-over share a render branch, so the last frame stays on screen
+behind the notice; only leaving removes the game. Dismissing goes back to the level menu rather than
+the start screen, so replaying is one click.
+
+**The session and the camera are built in `OnInitialized`, not as field initializers**, because each
+needs something a field initializer cannot see: the session needs the `Level` parameter, and the
+camera needs the session.
 
 **`SporbitsUI` is `IDisposable` solely to stop the tick loop.** A scheduled animation frame cannot
 be cancelled, so the loop stops by declining to schedule the next one. Game over already stops it;
 the flag is what makes any *other* way of leaving a game safe.
 
-`IsOver` lives on the space because crashing is something that happens in one; the session reads it
-and declines to advance, whatever keeps calling `Tick`. The UI polls it after each tick rather than
-subscribing: the tick loop is already there, and an event would have to be raised from inside `Tick`.
+`Outcome` lives on the space because winning and losing are things that happen in one; the session
+reads it and declines to advance, whatever keeps calling `Tick`. An enum rather than a bool, because a
+goal makes a win tellable from a loss and the notice has to say which. The UI polls it after each tick
+rather than subscribing: the tick loop is already there, and an event would have to be raised from
+inside `Tick`.
 
 **The gate on dismissing the game-over notice is load-bearing, not decoration.** Crashing while
 holding an arrow key is the normal way to lose, and `keydown` auto-repeats at the OS rate — so an
 ungated notice would be dismissed before it had finished fading in. Its duration is one constant on
 the shell, handed to the stylesheet as a custom property on the element, so the gate and the fade
 cannot drift apart.
+
+## Levels
+
+**The shape of a level here is a first pass rather than a design, and Stuart's call as such.**
+`ISporbitsLevel` is a `Name` and a `Populate(SporbitsSpace)` — a level that *is* the code populating a
+space, which is the far end of the scale from the data-shaped level Sabric's `architecture.md` holds
+up as the aspiration. It exists to get levels on screen and find out what they actually need. Nothing
+about it is settled.
+
+**Levels are registered one at a time, and registration order is menu order.** `AddSporbitsLevel<T>()`
+lives in `Sporbits.Engine`; the shell injects `IEnumerable<ISporbitsLevel>` and renders a button each.
+Scanning an assembly for implementations would mean reflection, which the view seam next door went to
+real trouble to avoid. Registration order also beats sorting by name — a game's levels have an order
+its author meant, and alphabetical is one nobody chose.
+
+**A level has to be stateless.** One is registered once and populates a fresh space for every
+playthrough, so anything that has to remember something across ticks is an object, an effect or a rule
+it puts into the space rather than a field of its own.
+
+**The space keeps the roles; a level fills them in.** `SporbitsSpace.Populate(level)` adds the gravity
+controller and the thrust effect, runs the level, and adds `Player` last — last so that a level can
+put the player somewhere before there is a body at the origin to move. `Player` and `Puck` are the
+space's own lazily-built properties because the camera and the keyboard wiring reach for them by name
+and would have nowhere to reach if a level owned them. `Goal` is settable and nullable instead, since
+a level without one is a level with a different objective.
+
+`SporbitsSpace.Orbit` places a planet in a circular orbit around another, and `OrbitalSpeed` is the
+`sqrt(G(M+m)/r)` behind it. Both masses, because two bodies orbit their shared centre of mass — which
+matters for a puck around a player's planet, where the ratio is nothing like a planet around a star.
+**It does not work — see below.**
+
+**A static body still pulls.** Aether's `GravityController` takes a static body's mass into account
+like any other, so `Sun` is `BodyType.Static` and does not drift when the player thrusts.
+
+## Open: `OrbitalSpeed` doesn't produce orbits
+
+Two observations from playing it:
+
+- **Empty space.** The puck starts at (10, 0) with velocity (0, -4) and settles into a stable orbit
+  around the player's planet. The calculation says that speed is comfortably above escape velocity
+  at that distance.
+- **Solar system.** Everything `Orbit` placed falls straight into the sun, within about half a second
+  of the level starting.
+
+The levels' starting configurations are not the thing to adjust. What `OrbitalSpeed` is getting wrong
+is the thing to find.
+
+## Next: a headless mode
+
+Deriving the orbit maths by arithmetic is what produced the wrong answer, and there is currently no
+way to check it against what the physics actually does: the in-app browser doesn't drive
+`requestAnimationFrame`, so an agent cannot watch a game run at all.
+
+**A headless mode — a game driven and read back in text, with no browser — is the next thing to
+build.** It is what would make the orbits observable rather than derived, and it is the tool the
+question above needs before that question can be answered.
+
+## Rules: the post-step counterpart to an effect
+
+`ISporbitsRule` is `Update(delta, space)`, run from `SporbitsSpace.OnAdvance` after `base` — so on
+settled state, with `World.Step` finished and the sync sweep done. The asteroid stream is the only
+one.
+
+**What forces it is spawning.** An effect runs inside `World.Step`, where Aether's world is locked;
+"an effect adding game objects should not stay allowed" is an open question in Sabric's
+`architecture.md`, and a rule sidesteps it rather than answering it. Whether Sabric wants a rule
+concept at all, or whether an effect absorbs it, is open there too. This one is Sporbits' own, and
+exists partly so that question has an instance to look at instead of only arguments.
 
 ## Curiosity: `field!` versus `= null!`
 
@@ -117,15 +192,16 @@ keys, both self-invalidating, inside a display-only wrapper — and the root ove
 to `false`, so it renders once and never again. The object list is a `GameObjectsView` that watches
 the collection, so spawning and despawning work without the root ever rendering again.
 
-**There is a start screen and a game over.** `SporbitsShell` wraps everything, a game and its view
-are built when the start button is pressed, and crashing the puck into the player's planet freezes
-the game behind a notice that fades in and then goes back to the start screen on a click or a key.
+**There is a start screen, a level menu and a game over.** `SporbitsShell` wraps everything, a game
+and its view are built when a level is picked, and winning or losing freezes the game behind a notice
+that fades in and then goes back to the menu on a click or a key.
 
-**`PlainPlanetView` has nothing registered against it yet**, and that's expected: both planets that
-exist have dedicated roles. The puck in particular needs its own view whatever it currently looks
-like — the moment there's a third planet it has to be distinguishable, and a field of grey obstacle
-planets is exactly the case that would force it. The fallback is for those obstacles, not for the
-puck.
+**Three levels exist**: empty space, a solar system, and an asteroid stream, all of them with a goal.
+Between them they are what put `Goal`, `Sun`, `ObstaclePlanet` and the rule concept in.
+
+**`PlainPlanetView` is what `ObstaclePlanet` renders as**, which is the case it was kept for — a field
+of grey planets that are only in the way. `Sun` and `Goal` have views of their own, and the puck keeps
+its own however plain it currently looks, because it has to stay tellable from the obstacles.
 
 The rest of the frontend is still knowingly placeholder, kept because being able to run the thing
 and watch the tick counter move is load-bearing rather than decorative.

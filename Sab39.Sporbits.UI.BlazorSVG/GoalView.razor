@@ -1,0 +1,14 @@
+@inherits GameObjectViewBase<Goal>
+
+@* Two circles rather than one: a mouth faint enough to see the puck inside, and a ring around it
+   that reads as a target rather than as one more planet. *@
+<g>
+    <circle class="goal-mouth" cx="@X" cy="@Y" r="@Radius" />
+    <circle class="goal-ring" cx="@X" cy="@Y" r="@Radius" />
+</g>
+
+@code {
+    private float X => GameObject.Position.X;
+    private float Y => GameObject.Position.Y;
+    private float Radius => GameObject.Radius;
+}

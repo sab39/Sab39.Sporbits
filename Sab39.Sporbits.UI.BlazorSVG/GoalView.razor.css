@@ -1,0 +1,12 @@
+.goal-mouth {
+    fill: rgb(85 221 136 / 0.15);
+}
+
+/* Widths and dashes are in world units, so they hold their size against the planets rather than
+   against the screen. */
+.goal-ring {
+    fill: none;
+    stroke: #5d8;
+    stroke-width: 0.4;
+    stroke-dasharray: 1.6 1.1;
+}

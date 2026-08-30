@@ -13,22 +13,29 @@ public sealed partial class SporbitsUI : IDisposable
 {
     private ElementReference containerDiv;
 
-    private readonly SporbitsSession session = new();
-
-    private readonly Camera camera;
-
-    /// <remarks>
-    /// A constructor rather than a field initializer, only because the camera needs the session and
-    /// a field initializer cannot see one.
-    /// </remarks>
-    public SporbitsUI() => this.camera = new(this.session) { Extent = new(200, 150) };
-
     /// <summary>
-    /// Raised once, when the game ends. The tick loop stops in the same breath, so what stays on
-    /// screen is the frame the game ended on.
+    /// What this game is a game of. Rendering this component is what starts it, so the level has to
+    /// be known before there is anything on screen.
     /// </summary>
     [Parameter]
-    public EventCallback OnGameOver { get; set; }
+    [EditorRequired]
+    public ISporbitsLevel Level { get; set; } = null!;
+
+    /// <remarks>
+    /// Built in OnInitialized rather than as field initializers, because both need something that
+    /// isn't there until the parameters are: the session needs the level, and the camera needs the
+    /// session.
+    /// </remarks>
+    private SporbitsSession session = null!;
+
+    private Camera camera = null!;
+
+    /// <summary>
+    /// Raised once, when the game ends, carrying which way it went. The tick loop stops in the same
+    /// breath, so what stays on screen is the frame the game ended on.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Outcome> OnGameOver { get; set; }
 
     private readonly PressedKeys pressedKeys = new();
 
@@ -47,6 +54,9 @@ public sealed partial class SporbitsUI : IDisposable
 
     protected override void OnInitialized()
     {
+        this.session = new(Level);
+        this.camera = new(this.session) { Extent = new(200, 150) };
+
         this.session.Init();
 
         this.camera.Behaviour = new FollowBehaviour(this.session.CurrentSpace.Player);
@@ -93,7 +103,7 @@ public sealed partial class SporbitsUI : IDisposable
         {
             // Nothing to await it with - the loop is driven by a void callback from JS - and
             // nothing left for this component to do once it has said so.
-            OnGameOver.InvokeAsync();
+            OnGameOver.InvokeAsync(this.session.Outcome);
             return;
         }
 

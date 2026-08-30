@@ -19,6 +19,16 @@ public abstract class PlanetBase : SporbitsObjectBase
     public float Radius { get => Circle.Radius; set => Circle.Radius = value; }
     public float Density { get => Circle.Density; set => Circle.Density = value; }
 
+    /// <summary>
+    /// What this planet weighs from its size and density alone, body or no body.
+    /// </summary>
+    /// <remarks>
+    /// Mass itself is only meaningful once the planet is attached, and a level has to work orbits
+    /// out before anything is attached - so the computation is available up front, and
+    /// <see cref="InitializeBody"/> is what commits it.
+    /// </remarks>
+    public float ComputedMass => float.Pi * Radius * Radius * Density;
+
     protected override void InitializeBody()
     {
         // Nothing to drag against in space.
@@ -29,7 +39,7 @@ public abstract class PlanetBase : SporbitsObjectBase
 
         // After the fixture, not before: CreateFixture resets the body's mass from what its shapes
         // come to, so a value set first would be silently thrown away.
-        Mass = float.Pi * Radius * Radius * Density;
+        Mass = ComputedMass;
     }
 
     /// <remarks>

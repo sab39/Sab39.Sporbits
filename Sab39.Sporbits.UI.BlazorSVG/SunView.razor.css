@@ -1,0 +1,7 @@
+/* The stroke is the corona: a wide, faint ring costs nothing next to an SVG filter and reads the
+   same at this size. */
+.planet {
+    fill: #fd6;
+    stroke: rgb(255 221 102 / 0.2);
+    stroke-width: 3;
+}

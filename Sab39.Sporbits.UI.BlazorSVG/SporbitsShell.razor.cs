@@ -1,28 +1,54 @@
+using Sab39.Sporbits.Engine;
+
 using Microsoft.AspNetCore.Components;
 
 namespace Sab39.Sporbits.UI.BlazorSVG;
 
 /// <summary>
-/// The outermost thing on screen: the start screen, a game being played, and the game-over notice.
+/// The outermost thing on screen: the start screen, the level menu, a game being played, and the
+/// notice that says how it went.
 /// </summary>
 /// <remarks>
 /// There is nothing here that resets a game, because nothing needs one. SporbitsUI builds its own
-/// SporbitsSession as a field, so rendering it is what starts a game and dropping it out of the
-/// tree is what ends one - Blazor's component lifetime is the entire mechanism.
+/// SporbitsSession around the level it is handed, so rendering it is what starts a game and dropping
+/// it out of the tree is what ends one - Blazor's component lifetime is the entire mechanism.
 /// </remarks>
 public sealed partial class SporbitsShell
 {
-    private enum ShellState { NotStarted, Playing, GameOver }
+    private enum ShellState { NotStarted, ChoosingLevel, Playing, GameOver }
 
     private ShellState state;
 
     private ElementReference startButton;
+    private ElementReference levelMenu;
     private ElementReference gameOverNotice;
 
-    private void StartGame() => this.state = ShellState.Playing;
+    /// <summary>
+    /// Every level the game was built with, in the order they were registered.
+    /// </summary>
+    /// <remarks>
+    /// Registration order is menu order: MS.DI hands these back in the order they were added, which
+    /// is an order the game's author meant, where alphabetical would be one nobody chose.
+    /// </remarks>
+    [Inject]
+    private IEnumerable<ISporbitsLevel> levels { get; set; } = [];
+
+    private ISporbitsLevel level = null!;
+
+    private void ChooseLevel()
+    {
+        this.state = ShellState.ChoosingLevel;
+        this.needsFocus = true;
+    }
+
+    private void StartGame(ISporbitsLevel choice)
+    {
+        this.level = choice;
+        this.state = ShellState.Playing;
+    }
 
     /// <summary>
-    /// How long the game-over notice takes to fade in, and how long it ignores being dismissed for.
+    /// How long the notice takes to fade in, and how long it ignores being dismissed for.
     /// </summary>
     /// <remarks>
     /// Handed to the stylesheet as a custom property rather than written out in both places. The
@@ -34,8 +60,13 @@ public sealed partial class SporbitsShell
 
     private bool isDismissable;
 
-    private async Task HandleGameOver()
+    private Outcome outcome;
+
+    private string outcomeClass => this.outcome is Outcome.Won ? "won" : "lost";
+
+    private async Task HandleGameOver(Outcome result)
     {
+        this.outcome = result;
         this.state = ShellState.GameOver;
         this.isDismissable = false;
         this.needsFocus = true;
@@ -49,11 +80,15 @@ public sealed partial class SporbitsShell
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <remarks>
+    /// Back to the menu rather than to the start screen: the level just played is one click away
+    /// again, and so is the next one, which is what trying levels out wants.
+    /// </remarks>
     private void Dismiss()
     {
         if (!this.isDismissable) return;
 
-        this.state = ShellState.NotStarted;
+        this.state = ShellState.ChoosingLevel;
         this.needsFocus = true;
     }
 
@@ -74,6 +109,7 @@ public sealed partial class SporbitsShell
         switch (this.state)
         {
             case ShellState.NotStarted: await this.startButton.FocusAsync(); break;
+            case ShellState.ChoosingLevel: await this.levelMenu.FocusAsync(); break;
             case ShellState.GameOver: await this.gameOverNotice.FocusAsync(); break;
         }
     }

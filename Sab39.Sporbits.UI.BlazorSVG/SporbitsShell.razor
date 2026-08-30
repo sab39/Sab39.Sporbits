@@ -1,24 +1,35 @@
 @* Playing and GameOver share a branch on purpose: the game stays on screen behind the notice,
-   frozen on the frame it crashed on, and only leaving for the start screen tears it down. *@
+   frozen on the frame it ended on, and only leaving for the menu tears it down. *@
 <div class="sporbits-shell">
     @if (this.state is ShellState.NotStarted)
     {
         <div class="sporbits-start">
-            <button @ref="startButton" @onclick="StartGame">Start game</button>
+            <button @ref="startButton" @onclick="ChooseLevel">Start game</button>
+        </div>
+    }
+    else if (this.state is ShellState.ChoosingLevel)
+    {
+        @* tabindex so the menu can hold focus coming out of a game; the buttons are reached from
+           there by tabbing, since @ref in a loop only ever captures the last one. *@
+        <div class="sporbits-start sporbits-levels" tabindex="-1" @ref="levelMenu">
+            @foreach (var choice in this.levels)
+            {
+                <button @onclick="() => StartGame(choice)">@choice.Name</button>
+            }
         </div>
     }
     else
     {
-        <SporbitsUI OnGameOver="HandleGameOver" />
+        <SporbitsUI Level="this.level" OnGameOver="HandleGameOver" />
     }
 
     @if (this.state is ShellState.GameOver)
     {
         @* tabindex is what lets the notice hold focus, which is what makes "a keypress anywhere"
            reach a handler at all; inset:0 is what does the same for a click. *@
-        <div class="sporbits-game-over" style="--fade-duration: @(FadeMillis)ms" tabindex="-1"
+        <div class="sporbits-game-over @outcomeClass" style="--fade-duration: @(FadeMillis)ms" tabindex="-1"
              @ref="gameOverNotice" @onclick="Dismiss" @onkeydown="Dismiss">
-            <span>Game over</span>
+            <span>@(this.outcome is Outcome.Won ? "Goal" : "Game over")</span>
         </div>
     }
 </div>

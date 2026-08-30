@@ -30,6 +30,22 @@
     background-color: rgb(64 64 76);
 }
 
+.sporbits-levels {
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* The menu is a list rather than one call to action, so its buttons are smaller and all one width. */
+.sporbits-levels button {
+    min-width: 18rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.5rem;
+}
+
+.sporbits-levels:focus {
+    outline: none;
+}
+
 .sporbits-game-over {
     position: absolute;
     inset: 0;
@@ -42,6 +58,10 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     animation: sporbits-fade-in var(--fade-duration, 1000ms) ease-in both;
+}
+
+.sporbits-game-over.won {
+    color: #5d8;
 }
 
 /* It only has focus so that it can hear a keypress; there is nothing to show the user. */
