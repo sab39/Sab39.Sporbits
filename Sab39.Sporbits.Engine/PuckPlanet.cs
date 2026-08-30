@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
@@ -8,5 +6,9 @@ namespace Sab39.Sporbits.Engine;
 /// <remarks>
 /// Partial because the Accept override is generated. Nothing else is expected in the other part.
 /// </remarks>
-public sealed partial class PuckPlanet(SporbitsGame game, Vector2 initialPosition, float initialRadius = 0.5f)
-    : PlanetBase(game, initialPosition, initialRadius);
+public sealed partial class PuckPlanet : PlanetBase
+{
+    // Radius is inherited, so a smaller default can only be applied here rather than at the
+    // declaration - and it belongs to the type rather than to every call site.
+    public PuckPlanet() => Radius = 0.5f;
+}

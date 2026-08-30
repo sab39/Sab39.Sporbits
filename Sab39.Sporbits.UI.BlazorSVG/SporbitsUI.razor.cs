@@ -10,7 +10,7 @@ public sealed partial class SporbitsUI : IDisposable
 {
     private ElementReference containerDiv;
 
-    private readonly SporbitsGame game = new();
+    private readonly SporbitsSession session = new();
 
     /// <summary>
     /// Raised once, when the game ends. The tick loop stops in the same breath, so what stays on
@@ -29,10 +29,10 @@ public sealed partial class SporbitsUI : IDisposable
 
     protected override void OnInitialized()
     {
-        this.game.Init();
+        this.session.Init();
 
         KeyboardInputSource keyboard = new(this.pressedKeys.Keys, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
-        this.game.PlayerInput.AddInputSource(keyboard);
+        this.session.CurrentSpace.PlayerInput.AddInputSource(keyboard);
     }
 
     /// <remarks>
@@ -67,9 +67,9 @@ public sealed partial class SporbitsUI : IDisposable
 
     private void TriggerGameTick(double tickStamp)
     {
-        this.game.Tick((long)tickStamp);
+        this.session.Tick((long)tickStamp);
 
-        if (this.game.IsOver)
+        if (this.session.IsOver)
         {
             // Nothing to await it with - the loop is driven by a void callback from JS - and
             // nothing left for this component to do once it has said so.

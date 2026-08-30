@@ -1,38 +1,45 @@
 using System.Numerics;
 
+using Sab39.Sabric.Engine;
 using Sab39.Sabric.Engine.Aether;
 
 using nkast.Aether.Physics2D.Controllers;
-using Sab39.Sabric.Engine;
 
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
-/// A game of Sporbits.
+/// The space a game of Sporbits is played in: the planets, and the gravity between them.
 /// </summary>
-public sealed class SporbitsGame : AetherGameBase
+public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session)
 {
-    public PlayerPlanet Player => field ??= new(this, default);
-    public PuckPlanet Puck => field ??= new(this, new(10, 0)) { Velocity = new(0, -4) };
+    public PlayerPlanet Player => field ??= new();
+    public PuckPlanet Puck => field ??= new() { Position = new(10, 0), Velocity = new(0, -4) };
 
     public GravityController Gravity => field ??= new(8);
     public PlayerInputController PlayerInput => field ??= new(Player, 16);
 
     /// <summary>
-    /// True once the puck has crashed into the player's planet. A game that is over stops
-    /// advancing, whatever keeps calling <see cref="GameBase.Tick"/>.
+    /// Fills the space with what a game of Sporbits starts with.
     /// </summary>
-    public bool IsOver { get; private set; }
-
-    protected override void OnInit()
+    /// <remarks>
+    /// Standing in for a level. This is the one seam where "what is in this space" is decided, and
+    /// it is where the level machinery attaches once there is any - see the open questions in the
+    /// Sabric repo's Docs/architecture.md.
+    /// </remarks>
+    public void Populate()
     {
         World.Add(Gravity);
 
-        AddGameObject(Player);
-        AddGameObject(Puck);
+        Add(Player);
+        Add(Puck);
 
         World.Add(PlayerInput);
     }
+
+    /// <summary>
+    /// True once the puck has crashed into the player's planet.
+    /// </summary>
+    public bool IsOver { get; private set; }
 
     /// <remarks>
     /// Slack on the crash test, so contact registers on the frame it happens rather than a frame
@@ -46,24 +53,18 @@ public sealed class SporbitsGame : AetherGameBase
     /// </remarks>
     private const float CrashTolerance = 0.1f;
 
-    protected override void OnTick(long tickStamp)
+    protected override void OnAdvance(long delta)
     {
-        if (IsOver) return;
+        base.OnAdvance(delta);
 
-        base.OnTick(tickStamp);
-
-        // After the base tick, not before: SyncFromWorld is what makes these positions this
+        // After the base advance, not before: SyncFromWorld is what makes these positions this
         // tick's rather than last tick's.
         var crashDistance = Player.Radius + Puck.Radius + CrashTolerance;
         if (Vector2.Distance(Player.Position, Puck.Position) <= crashDistance) IsOver = true;
     }
 
-    protected override void OnAddGameObject(AetherGameObjectBase obj) => Gravity.AddBody(obj.Body);
+    protected override void OnAdd(AetherObjectBase obj) => Gravity.AddBody(obj.Body);
 
     // Aether's GravityController has no RemoveBody, only the list AddBody appends to.
-    protected override void OnRemoveGameObject(AetherGameObjectBase obj)
-    {
-        Gravity.Bodies.Remove(obj.Body);
-        base.OnRemoveGameObject(obj);
-    }
+    protected override void OnRemove(AetherObjectBase obj) => Gravity.Bodies.Remove(obj.Body);
 }

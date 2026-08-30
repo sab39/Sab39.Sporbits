@@ -1,5 +1,5 @@
 <div class="sporbits-container" @ref="containerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
-    <StatsPanel Game="game" PressedKeys="pressedKeys" />
+    <StatsPanel Session="session" PressedKeys="pressedKeys" />
     <div class="sporbits-game-container">
         <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="@ViewLeft @ViewTop @ViewWidth @ViewHeight" style="aspect-ratio: @ViewWidth/@ViewHeight">
             <defs>
@@ -8,7 +8,7 @@
                 </clipPath>
             </defs>
             <g clip-path="url(#viewport)">
-                <GameObjectsView Items="game.GameObjects" />
+                <GameObjectsView Items="session.CurrentSpace.GameObjects" />
             </g>
         </svg>
     </div>

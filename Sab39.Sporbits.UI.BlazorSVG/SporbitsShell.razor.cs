@@ -7,8 +7,8 @@ namespace Sab39.Sporbits.UI.BlazorSVG;
 /// </summary>
 /// <remarks>
 /// There is nothing here that resets a game, because nothing needs one. SporbitsUI builds its own
-/// SporbitsGame as a field, so rendering it is what starts a game and dropping it out of the tree
-/// is what ends one - Blazor's component lifetime is the entire mechanism.
+/// SporbitsSession as a field, so rendering it is what starts a game and dropping it out of the
+/// tree is what ends one - Blazor's component lifetime is the entire mechanism.
 /// </remarks>
 public sealed partial class SporbitsShell
 {

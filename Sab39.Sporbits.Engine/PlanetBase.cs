@@ -1,21 +1,18 @@
-using System.Numerics;
-
-using Sab39.Sabric.Engine.Aether;
-
 using nkast.Aether.Physics2D.Collision.Shapes;
 using nkast.Aether.Physics2D.Dynamics;
 
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
-/// A round body with mass. Everything in Sporbits is one of these.
+/// A round body with mass. Almost everything in Sporbits is one of these.
 /// </summary>
-public abstract class PlanetBase(SporbitsGame game, Vector2 initialPosition = default, float initialRadius = 1, float initialDensity = 1)
-    : AetherGameObjectBase(game, initialPosition)
+public abstract class PlanetBase : SporbitsObjectBase
 {
-    public override SporbitsGame Game => (SporbitsGame)base.Game;
-
-    public CircleShape Circle { get; } = new(initialRadius, initialDensity);
+    /// <remarks>
+    /// The shape exists from construction rather than being built on attach, because Radius and
+    /// Density read and write straight through to it - so a detached planet still has a size.
+    /// </remarks>
+    public CircleShape Circle { get; } = new(1, 1);
 
     public Fixture Fixture => field ??= Body.FixtureList[0];
 

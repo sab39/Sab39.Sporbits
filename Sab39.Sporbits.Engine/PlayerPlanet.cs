@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
@@ -8,4 +6,4 @@ namespace Sab39.Sporbits.Engine;
 /// <remarks>
 /// Partial because the Accept override is generated. Nothing else is expected in the other part.
 /// </remarks>
-public sealed partial class PlayerPlanet(SporbitsGame game, Vector2 initialPosition) : PlanetBase(game, initialPosition);
+public sealed partial class PlayerPlanet : PlanetBase;
