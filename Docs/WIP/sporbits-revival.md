@@ -39,12 +39,11 @@ Framework-level decisions are in Sabric's `Docs/architecture.md`. What's here is
   itself instead: `PlanetBase` registers with `Space.Gravity` on attach and unregisters on detach.
   A space is therefore free to hold things mass has no opinion about — a goal, a boundary — with
   nothing to opt out of.
-- **Input control is split across the two repos.** `AetherInputControllerBase` in
-  `Sabric.Engine.Aether` collects `IPlayerInputSource`s and reduces them to a clamped
-  `MovementDirection`; it leaves Aether's abstract `Controller.Update` unimplemented, so
-  every derived controller is forced to say what that direction actually does. Sporbits'
-  own `PlayerInputController` supplies the answer — a force on the player planet — and
-  is typed on `PlayerPlanet` rather than on the base object.
+- **Input control is split across the two repos.** `PlayerInput` in `Sabric.Engine` collects
+  `IPlayerInputSource`s and reduces them to a clamped `MovementDirection`, and `SporbitsSpace`
+  holds one, which is what the UI hands the keyboard to. Sporbits' own `PlayerThrustEffect`
+  says what that direction actually does — a force on the player planet — and is typed on
+  `PlayerPlanet` rather than on the base object.
 
   Its placement in `Sporbits.Engine` is provisional and flagged in the source: it is the
   translation from player intent into a force, which is arguably an input concern rather
