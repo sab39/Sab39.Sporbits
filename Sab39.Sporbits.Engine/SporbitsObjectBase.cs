@@ -11,5 +11,5 @@ namespace Sab39.Sporbits.Engine;
 /// </remarks>
 public abstract class SporbitsObjectBase : AetherObjectBase
 {
-    public override SporbitsSpace? Space => (SporbitsSpace?)base.Space;
+    public override SporbitsSpace Space => (SporbitsSpace)base.Space;
 }

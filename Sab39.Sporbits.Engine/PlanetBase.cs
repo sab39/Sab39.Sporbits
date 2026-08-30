@@ -27,4 +27,27 @@ public abstract class PlanetBase : SporbitsObjectBase
 
         Body.CreateFixture(Circle);
     }
+
+    /// <remarks>
+    /// A planet puts itself into the space's gravity, rather than the space doing it to everything
+    /// it holds. Mass is a planet's own claim about itself, and a space is meant to be able to hold
+    /// things that have no such claim - a goal, a boundary, a marker.
+    ///
+    /// The two halves run either side of base on purpose, and the asymmetry is the point: attaching
+    /// is what creates the body and detaching is what destroys it, so registering has to follow the
+    /// first and unregistering has to precede the second. Reversed, either half reads Body when
+    /// there isn't one.
+    /// </remarks>
+    protected override void OnAttached()
+    {
+        base.OnAttached();
+        Space.Gravity.AddBody(Body);
+    }
+
+    // Aether's GravityController has no RemoveBody, only the list AddBody appends to.
+    protected override void OnDetached()
+    {
+        Space.Gravity.Bodies.Remove(Body);
+        base.OnDetached();
+    }
 }

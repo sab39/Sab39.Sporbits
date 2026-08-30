@@ -28,12 +28,14 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public void Populate()
     {
-        World.Add(Gravity);
+        // Controllers first, so that nothing attaching can find the gravity it registers with
+        // missing. Nothing today would - the property builds it on demand - but the order that
+        // needs no such argument is free.
+        AddController(Gravity);
+        AddController(PlayerInput);
 
         Add(Player);
         Add(Puck);
-
-        World.Add(PlayerInput);
     }
 
     /// <summary>
@@ -62,9 +64,4 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
         var crashDistance = Player.Radius + Puck.Radius + CrashTolerance;
         if (Vector2.Distance(Player.Position, Puck.Position) <= crashDistance) IsOver = true;
     }
-
-    protected override void OnAdd(AetherObjectBase obj) => Gravity.AddBody(obj.Body);
-
-    // Aether's GravityController has no RemoveBody, only the list AddBody appends to.
-    protected override void OnRemove(AetherObjectBase obj) => Gravity.Bodies.Remove(obj.Body);
 }
