@@ -6,8 +6,8 @@
 # dotenv files
 .env
 
-# Planning/handoff docs (personal convention, not for sharing)
-Docs/WIP/
+# Local-only files, not for the published repo
+*.local.*
 
 # User-specific files
 *.rsuser
