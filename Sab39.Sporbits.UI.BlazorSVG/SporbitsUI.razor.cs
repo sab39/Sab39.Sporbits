@@ -1,3 +1,6 @@
+using System.Numerics;
+
+using Sab39.Sabric.UI;
 using Sab39.Sabric.UI.BlazorSVG;
 using Sab39.Sporbits.Engine;
 
@@ -12,6 +15,14 @@ public sealed partial class SporbitsUI : IDisposable
 
     private readonly SporbitsSession session = new();
 
+    private readonly Camera camera;
+
+    /// <remarks>
+    /// A constructor rather than a field initializer, only because the camera needs the session and
+    /// a field initializer cannot see one.
+    /// </remarks>
+    public SporbitsUI() => this.camera = new(this.session) { Extent = new(200, 150) };
+
     /// <summary>
     /// Raised once, when the game ends. The tick loop stops in the same breath, so what stays on
     /// screen is the frame the game ended on.
@@ -21,15 +32,24 @@ public sealed partial class SporbitsUI : IDisposable
 
     private readonly PressedKeys pressedKeys = new();
 
-    public float ViewWidth { get; } = 200;
-    public float ViewHeight { get; } = 150;
+    /// <remarks>
+    /// Both derived from the camera's Extent, so the window the viewBox describes and the window
+    /// the camera thinks it is looking through cannot drift apart. Invariant formatting because SVG
+    /// attribute values are not localised and Blazor WASM takes its culture from the browser.
+    /// </remarks>
+    private string viewBox
+        => FormattableString.Invariant(
+            $"{-extent.X / 2} {-extent.Y / 2} {extent.X} {extent.Y}");
 
-    public float ViewLeft => -ViewWidth / 2;
-    public float ViewTop => -ViewHeight / 2;
+    private string aspectRatio => FormattableString.Invariant($"{extent.X}/{extent.Y}");
+
+    private Vector2 extent => this.camera.Extent;
 
     protected override void OnInitialized()
     {
         this.session.Init();
+
+        this.camera.Behaviour = new FollowBehaviour(this.session.CurrentSpace.Player);
 
         KeyboardInputSource keyboard = new(this.pressedKeys.Keys, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
         this.session.CurrentSpace.PlayerInput.AddInputSource(keyboard);
@@ -86,6 +106,13 @@ public sealed partial class SporbitsUI : IDisposable
     /// A scheduled animation frame cannot be cancelled, so the loop is stopped by declining to
     /// schedule the next one. Without this, a component torn down mid-game would go on ticking a
     /// game nothing is rendering.
+    ///
+    /// The camera is disposed here for the same reason it is constructed here: it holds a
+    /// subscription to the session, and this component is what owns its lifetime.
     /// </remarks>
-    public void Dispose() => this.isDisposed = true;
+    public void Dispose()
+    {
+        this.isDisposed = true;
+        this.camera.Dispose();
+    }
 }

@@ -1,0 +1,28 @@
+@* A stopgap, and meant to be thrown away rather than kept.
+
+   The starfield is correct and useless at the same time: stars that far away genuinely don't shift
+   as you move, which means nothing on screen moves when the camera does and flying around looks
+   like standing still. A grid pinned to world coordinates - Parallax 1, the default, so it moves
+   and turns and scales exactly with everything else - is the crudest thing that restores the sense
+   of motion while what should actually be there is worked out. *@
+<defs>
+    <pattern id="sporbits-grid-minor" patternUnits="userSpaceOnUse" width="5" height="5">
+        <path class="grid-minor" d="M 5 0 L 0 0 0 5" />
+    </pattern>
+
+    <pattern id="sporbits-grid-major" patternUnits="userSpaceOnUse" width="20" height="20">
+        <path class="grid-major" d="M 20 0 L 0 0 0 20" />
+    </pattern>
+</defs>
+
+@* Wrap on the major spacing, which the minor one divides into, so one value bounds both. *@
+<CameraLayer Camera="Camera" Wrap="20">
+    <rect x="-500" y="-500" width="1000" height="1000" fill="url(#sporbits-grid-minor)" />
+    <rect x="-500" y="-500" width="1000" height="1000" fill="url(#sporbits-grid-major)" />
+</CameraLayer>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Camera Camera { get; set; } = default!;
+}

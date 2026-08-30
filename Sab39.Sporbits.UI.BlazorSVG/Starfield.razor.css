@@ -1,0 +1,16 @@
+/* Brightness carries depth as much as size does: the fixed layer is the faintest, and the two
+   that move are the ones near enough to stand out. */
+.star-far {
+    fill: #fff;
+    opacity: 0.3;
+}
+
+.star-mid {
+    fill: #fff;
+    opacity: 0.55;
+}
+
+.star-near {
+    fill: #dfe6ff;
+    opacity: 0.85;
+}

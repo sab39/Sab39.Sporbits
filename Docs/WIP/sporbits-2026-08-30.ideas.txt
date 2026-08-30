@@ -1,10 +1,14 @@
 Sporbits
 
 - UX
-  - Starfield background with very slight parallax
-  - Viewport stays centered on PlayerPlanet
-  - Minimap showing the whole space
+  + Camera
+    - Design agreed in Sab39.Sabric/Docs/WIP/camera.md, which covers the Sporbits
+      side too
+    - Camera stays centered on PlayerPlanet
+    - Starfield background with very slight parallax
+    - Minimap, scaling to fit player, puck and a level-defined initial area
   - Mouse control - accelerate toward cursor while lmb held
+    - Needs Camera.ToWorld, so it follows the camera work
 - Gameplay
   - Objectives:
     - Goal

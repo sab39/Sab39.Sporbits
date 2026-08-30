@@ -1,0 +1,74 @@
+@* Three tiled layers. The pattern is what makes this cost nothing: however far the camera
+   travels, the stars are one rect each and the browser does the tiling.
+
+   Parallax is deliberately tiny. Even the nearest star is an absurdly long way away on the scale
+   of a game about nudging planets around, so the far layer sits at 0 - fixed against the sky, no
+   sliding at all - and the two nearer ones move only just enough to be noticed. Anything more
+   reads as a painted backdrop being dragged past.
+
+   The tile sizes are mutually awkward on purpose: three periods that don't divide into each other
+   beat against one another, and the eye stops finding the grid. *@
+<defs>
+    <pattern id="sporbits-stars-far" patternUnits="userSpaceOnUse" width="120" height="120">
+        <circle class="star-far" cx="9" cy="103" r="0.3" />
+        <circle class="star-far" cx="23" cy="41" r="0.3" />
+        <circle class="star-far" cx="31" cy="78" r="0.3" />
+        <circle class="star-far" cx="37" cy="7" r="0.3" />
+        <circle class="star-far" cx="48" cy="112" r="0.3" />
+        <circle class="star-far" cx="52" cy="55" r="0.3" />
+        <circle class="star-far" cx="61" cy="26" r="0.3" />
+        <circle class="star-far" cx="66" cy="91" r="0.3" />
+        <circle class="star-far" cx="74" cy="63" r="0.3" />
+        <circle class="star-far" cx="83" cy="14" r="0.3" />
+        <circle class="star-far" cx="89" cy="117" r="0.3" />
+        <circle class="star-far" cx="95" cy="47" r="0.3" />
+        <circle class="star-far" cx="104" cy="85" r="0.3" />
+        <circle class="star-far" cx="112" cy="33" r="0.3" />
+        <circle class="star-far" cx="117" cy="69" r="0.3" />
+        <circle class="star-far" cx="15" cy="19" r="0.3" />
+    </pattern>
+
+    <pattern id="sporbits-stars-mid" patternUnits="userSpaceOnUse" width="170" height="170">
+        <circle class="star-mid" cx="14" cy="61" r="0.45" />
+        <circle class="star-mid" cx="38" cy="149" r="0.45" />
+        <circle class="star-mid" cx="57" cy="22" r="0.45" />
+        <circle class="star-mid" cx="72" cy="96" r="0.45" />
+        <circle class="star-mid" cx="91" cy="134" r="0.45" />
+        <circle class="star-mid" cx="108" cy="45" r="0.45" />
+        <circle class="star-mid" cx="126" cy="112" r="0.45" />
+        <circle class="star-mid" cx="141" cy="7" r="0.45" />
+        <circle class="star-mid" cx="155" cy="79" r="0.45" />
+        <circle class="star-mid" cx="163" cy="160" r="0.45" />
+    </pattern>
+
+    <pattern id="sporbits-stars-near" patternUnits="userSpaceOnUse" width="230" height="230">
+        <circle class="star-near" cx="27" cy="88" r="0.65" />
+        <circle class="star-near" cx="63" cy="203" r="0.65" />
+        <circle class="star-near" cx="99" cy="34" r="0.65" />
+        <circle class="star-near" cx="134" cy="151" r="0.65" />
+        <circle class="star-near" cx="168" cy="71" r="0.65" />
+        <circle class="star-near" cx="196" cy="188" r="0.65" />
+        <circle class="star-near" cx="219" cy="119" r="0.65" />
+    </pattern>
+</defs>
+
+@* One rect per layer, big enough to cover the view however the camera is turned plus the one tile
+   of drift Wrap allows. It is a fill, not geometry, so the size costs nothing beyond the pixels
+   that end up on screen. *@
+<CameraLayer Camera="Camera" Parallax="0">
+    <rect x="-500" y="-500" width="1000" height="1000" fill="url(#sporbits-stars-far)" />
+</CameraLayer>
+
+<CameraLayer Camera="Camera" Parallax="0.015f" Wrap="170">
+    <rect x="-500" y="-500" width="1000" height="1000" fill="url(#sporbits-stars-mid)" />
+</CameraLayer>
+
+<CameraLayer Camera="Camera" Parallax="0.04f" Wrap="230">
+    <rect x="-500" y="-500" width="1000" height="1000" fill="url(#sporbits-stars-near)" />
+</CameraLayer>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Camera Camera { get; set; } = default!;
+}

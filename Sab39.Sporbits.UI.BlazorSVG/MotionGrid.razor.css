@@ -1,0 +1,16 @@
+/* Faint enough to read as texture rather than as scenery - it is there to be moved past, not
+   looked at. Stroke widths are world units and so scale with zoom, deliberately: a grid whose
+   lines stayed a constant thickness on screen would stop reading as part of the world. */
+.grid-minor {
+    fill: none;
+    stroke: #9aa0b0;
+    stroke-width: 0.06;
+    opacity: 0.16;
+}
+
+.grid-major {
+    fill: none;
+    stroke: #9aa0b0;
+    stroke-width: 0.12;
+    opacity: 0.3;
+}
