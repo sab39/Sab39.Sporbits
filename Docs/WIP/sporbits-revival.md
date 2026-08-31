@@ -130,6 +130,26 @@ is unchanged.
 second, which a planet in a wide slow orbit is, and a sleeping body ignores gravity entirely.
 `PlanetBase` turns it off.
 
+## The puck's surface repulsion bounces rather than settling
+
+`PuckRepulsionEffect` pushes the puck away from the surface of every planet that claims to repel it,
+with the inverse fourth power of the surface gap measured in the planet's own radii. It exists
+because a puck that lands on a planet can never be got off again.
+
+**It is kept because the bounce plays well, not because it is what was aimed at.** What was aimed at
+was a settled close orbit — the repulsion balancing gravity so the puck hangs just off the surface,
+catchable but not stuck. What happens instead is that the puck falls in, turns around at the balance
+point, and comes back out to where it started.
+
+**No force depending on distance alone can do otherwise.** A central force of `r` is conservative, so
+whatever radial kinetic energy the puck arrives with it must leave with, and the balance point is a
+spring rather than a resting place. Changing the exponent or the way the gap is measured changes how
+graceful the bounce is and nothing else. Finding the originally-imagined behaviour is open, and is
+not a search through `f(r)`.
+
+Whether it is even wanted is open too: the bounce is what makes the puck catchable, so anything that
+settles it risks trading a puck stuck on the surface for one stuck in a close orbit.
+
 ## Driving a game headlessly needs no framework support
 
 A .NET 10 file-based app referencing `Sab39.Sporbits.Engine` with `#:project` is the whole of it:

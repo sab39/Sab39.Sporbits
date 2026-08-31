@@ -30,6 +30,15 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
 
     public AetherGravityEffect Gravity => field ??= new(12);
 
+    /// <summary>
+    /// The short-range push that keeps the puck off everything it isn't meant to settle onto.
+    /// </summary>
+    /// <remarks>
+    /// Experimental. See <see cref="PuckRepulsionEffect"/> for what it is trying to fix and what it
+    /// deliberately isn't.
+    /// </remarks>
+    public PuckRepulsionEffect PuckRepulsion => field ??= new(Puck, 1);
+
     /// <remarks>
     /// Held by the space rather than by the effect that reads it, so that the UI has somewhere to
     /// hand a source that isn't inside an effect - and so that more than one effect could read the
@@ -53,6 +62,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     public void Populate(ISporbitsLevel level)
     {
         AddEffect(Gravity);
+        AddEffect(PuckRepulsion);
         AddEffect(PlayerThrust);
 
         level.Populate(this);

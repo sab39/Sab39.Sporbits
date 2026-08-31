@@ -49,6 +49,16 @@ public abstract class PlanetBase : SporbitsObjectBase
         Mass = ComputedMass;
     }
 
+    /// <summary>
+    /// Whether this planet pushes the puck off its surface at close range.
+    /// </summary>
+    /// <remarks>
+    /// A claim about the planet rather than a switch on the effect, the same way gravity is. The two
+    /// that say no say it for different reasons: the player's planet is the one the puck has to be
+    /// caught with, and the puck cannot repel itself.
+    /// </remarks>
+    public virtual bool RepelsPuck => true;
+
     /// <remarks>
     /// A planet puts itself into the space's gravity, rather than the space doing it to everything
     /// it holds. Mass is a planet's own claim about itself, and a space is meant to be able to hold
@@ -62,12 +72,16 @@ public abstract class PlanetBase : SporbitsObjectBase
     protected override void OnAttached()
     {
         base.OnAttached();
+
         Space.Gravity.Add(this);
+        if (RepelsPuck) Space.PuckRepulsion.Add(this);
     }
 
     protected override void OnDetached()
     {
+        if (RepelsPuck) Space.PuckRepulsion.Remove(this);
         Space.Gravity.Remove(this);
+
         base.OnDetached();
     }
 }

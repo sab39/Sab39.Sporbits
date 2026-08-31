@@ -18,7 +18,7 @@ builder.Services.AddGameObjectViewResolver()
 
 // Registration order is menu order.
 builder.Services.AddSporbitsLevel<EmptySpaceLevel>()
-    .AddSporbitsLevel<SolarSystemLevel>()
-    .AddSporbitsLevel<AsteroidStreamLevel>();
+    .AddSporbitsLevel<AsteroidStreamLevel>()
+    .AddSporbitsLevel<SolarSystemLevel>();
 
 await builder.Build().RunAsync();

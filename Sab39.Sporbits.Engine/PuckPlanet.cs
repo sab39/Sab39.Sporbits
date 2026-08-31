@@ -11,4 +11,7 @@ public sealed partial class PuckPlanet : PlanetBase
     // Radius is inherited, so a smaller default can only be applied here rather than at the
     // declaration - and it belongs to the type rather than to every call site.
     public PuckPlanet() => Radius = 0.5f;
+
+    // Nothing repels itself, and the effect would divide by a zero separation if it tried.
+    public override bool RepelsPuck => false;
 }
