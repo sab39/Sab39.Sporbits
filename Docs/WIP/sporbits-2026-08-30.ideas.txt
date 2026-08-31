@@ -19,7 +19,8 @@ Sporbits
   - Player and/or puck planet takes damage rather than immediate destruction on collision
   - "Kick" mechanic
     - Hold to charge, release to cast
-    - Applies an impulse to the puck directly away from player, proportional to charge and distance
+    - Applies an impulse to the puck directly away from player, proportional
+      to charge and inverse square of distance
     - Maybe limited "fuel" for this and only some levels have fuel
   - Level ideas:
     + Steady/increasing stream of planets/asteroids flying in from the right
