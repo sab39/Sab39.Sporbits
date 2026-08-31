@@ -120,16 +120,40 @@ like any other, so `Sun` is `BodyType.Static` and does not drift when the player
 
 ## Open: `OrbitalSpeed` doesn't produce orbits
 
-Two observations from playing it:
+`SporbitsSpace.OrbitalSpeed` is `sqrt(G(M+m)/r)`, with `G` the `GravityController`'s `Strength` of 8
+and masses of `πr²ρ`. Placed that way, nothing orbits. The levels' starting configurations are not
+the thing to adjust; what the calculation is getting wrong is the thing to find.
 
-- **Empty space.** The puck starts at (10, 0) with velocity (0, -4) and settles into a stable orbit
-  around the player's planet. The calculation says that speed is comfortably above escape velocity
-  at that distance.
-- **Solar system.** Everything `Orbit` placed falls straight into the sun, within about half a second
-  of the level starting.
+Two observations, from playing it:
 
-The levels' starting configurations are not the thing to adjust. What `OrbitalSpeed` is getting wrong
-is the thing to find.
+- **Empty space.** The puck starts at (10, 0) with velocity (0, -4) — placed by hand, not by `Orbit`
+  — and settles into a stable orbit around the player's planet. The calculation says that speed is
+  comfortably above escape velocity at that distance.
+- **Solar system.** The player starts at r=30 at what the calculation says is circular speed and
+  falls into the sun in 83 ticks / 699 ms. The inner obstacle goes first, then the puck, then the
+  player, which is inner-to-outer and so tells nothing apart.
+
+**The two disagree with each other, and that is the sharp part.** Reading a `G·M` back out of each:
+empty space wants something in the region of 100–600 where 31 was assumed, and the solar system wants
+something near 130,000 where 2,500 was assumed. No single value of `G` reconciles those — the implied
+ratio between the sun's pull and the planets' comes out several times larger than their masses say it
+should be. Those figures are derived from the two observations rather than measured, and the ranges
+are wide because "a stable orbit" and "about 700 ms" are soft inputs; they are worth having only as a
+hint about where to point a real measurement.
+
+### Ruled out by experiment
+
+Each of these was tried and changed nothing, so none of them needs trying again:
+
+- **The force law is already inverse-square.** Setting `GravityType = DistanceSquared` explicitly made
+  no difference; setting it to `Linear` made gravity dramatically stronger, collapsing the system in
+  17 ticks / 197 ms instead of 83 / 699. So the default is `DistanceSquared`, and the shape of the
+  falloff is not the problem.
+- **It is not the sun being static.** Making `Sun` dynamic gave 86 ticks / 802 ms against 83 / 699
+  static. Static versus dynamic was the one structural difference between the solar system and empty
+  space, and it is not the cause.
+- **It is not `Body.Mass` going unset.** Assigning `Body.Mass = ComputedMass` directly, alongside the
+  existing `Mass = ComputedMass`, changed nothing.
 
 ## Next: a headless mode
 
@@ -139,7 +163,9 @@ way to check it against what the physics actually does: the in-app browser doesn
 
 **A headless mode — a game driven and read back in text, with no browser — is the next thing to
 build.** It is what would make the orbits observable rather than derived, and it is the tool the
-question above needs before that question can be answered.
+question above needs before that question can be answered. The measurement that would settle it is
+the acceleration one body actually receives at two different distances: two numbers, which pin down
+the falloff and the constant together and end the guessing.
 
 ## Rules: the post-step counterpart to an effect
 
