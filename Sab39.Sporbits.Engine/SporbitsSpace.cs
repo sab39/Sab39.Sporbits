@@ -3,8 +3,6 @@ using System.Numerics;
 using Sab39.Sabric.Engine;
 using Sab39.Sabric.Engine.Aether;
 
-using nkast.Aether.Physics2D.Controllers;
-
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
@@ -30,7 +28,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public Goal? Goal { get; set; }
 
-    public GravityController Gravity => field ??= new(8);
+    public AetherGravityEffect Gravity => field ??= new(8);
 
     /// <remarks>
     /// Held by the space rather than by the effect that reads it, so that the UI has somewhere to
@@ -54,7 +52,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public void Populate(ISporbitsLevel level)
     {
-        AddController(Gravity);
+        AddEffect(Gravity);
         AddEffect(PlayerThrust);
 
         level.Populate(this);
@@ -70,13 +68,9 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// one - which matters for a puck around a player's planet, where the ratio is nothing like a
     /// planet around a star.
     ///
-    /// Assumes gravity falling off with the square of distance, which is what Aether's
-    /// GravityController does. An engine that did anything else would be replaced rather than
-    /// worked around.
-    ///
-    /// This does not currently produce orbits - what it gets wrong is an open item in
-    /// Docs/WIP/sporbits-revival.md, and the levels' starting configurations are not the thing to
-    /// adjust for it.
+    /// Assumes gravity falling off with the square of distance, which is what
+    /// <see cref="AetherGravityEffect"/> does - and what Aether's own GravityController does not, for
+    /// which see the remarks on that type.
     /// </remarks>
     public float OrbitalSpeed(float centralMass, float orbitingMass, float distance)
         => float.Sqrt(Gravity.Strength * (centralMass + orbitingMass) / distance);
