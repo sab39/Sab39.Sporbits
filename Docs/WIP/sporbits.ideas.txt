@@ -1,0 +1,60 @@
+Sporbits
+
+- Visuals
+  - Main view is an ellipse
+    - Scaled to browser window width and height
+    - With the edges fading out so it looks borderless
+      - Eg by a black ellipse on the perimeter with an inner shadow
+  - Arrow pointing to goal and puck if offscreen
+  - Starfield improvements:
+    - Generate programmatically each game
+    - Stars are smaller but with a glow
+    - Colour varies randomly from slightly blue through white to slightly red
+    - Brightness also varies randomly but nearer layer is brighter on average
+    - See if we can generate nebulae, galaxies etc
+  - Player visuals:
+    - Blue and green with white clouds, maybe atmosphere
+    - Red/orange volcanic overlay with damage
+  - Sun:
+    - Corona uses alpha and maybe animates
+  - Asteroids:
+    - Not spherical, have rotation
+
+- UX
+  - Escape key to quit
+  - Minimap
+    - Scale so that player, puck, and starting area always visible
+  - Mouse wheel zoom
+    - Maybe pan as well, which would unlock camera - snap back on arrow key?
+  - Mouse control - accelerate toward cursor while lmb held
+    - Relies on Camera.ToWorld
+
+- Gameplay
+  - Sun is a hazard for the puck
+  - Tune the puck repulsion
+    - Add damping so the puck can be captured into a close-but-not-too-close
+      orbit of other planets without being completely unrecoverable.
+  - Damage rather than instakill for player planet on contact
+    - proportional to force of impact
+    - tidal effects from proximity also damaging?
+  - Alternate objective: survival
+    - Keep the puck inside a (shrinking) ellipse
+  - Varying shaped / moving hazard areas
+  - "Kick" mechanic
+    - Hold to charge, release to cast
+    - Applies an impulse to the puck directly away from player, proportional
+      to charge and inverse square of distance
+    - Maybe limited "fuel" for this and only some levels have fuel
+
+- More levels
+  - Alternates of existing level concepts but with Survival objective
+  - Moving goal, possibly itself in orbit
+  - Puck itself comes flying in from outside, player has to capture it
+  - Puck starts out orbiting another planet, you have to steal it
+  - Opposing player with their own goal actively trying to score against you
+  - "Protect the innocent" mechanic
+    - some other planets are inhabited, mustn't mess with their orbit too
+      much etc.
+    - teeny spaceships or satellites?
+  - Binary star system
+
