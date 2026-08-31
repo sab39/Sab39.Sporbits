@@ -16,9 +16,8 @@ public sealed class SolarSystemLevel : ISporbitsLevel
         Sun sun = new();
         space.Add(sun);
 
-        // Opposite sides of the sun, so that the puck has to be caught up with before anything else.
         space.Orbit(space.Player, sun, 30);
-        space.Orbit(space.Puck, sun, 22, float.Pi);
+        space.Orbit(space.Puck, space.Player, 2.7f, float.Pi / 3);
 
         ObstaclePlanet inner = new() { Radius = 1.5f };
         space.Orbit(inner, sun, 15, float.Pi / 2);

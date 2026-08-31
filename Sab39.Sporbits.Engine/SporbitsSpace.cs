@@ -28,7 +28,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public Goal? Goal { get; set; }
 
-    public AetherGravityEffect Gravity => field ??= new(8);
+    public AetherGravityEffect Gravity => field ??= new(12);
 
     /// <remarks>
     /// Held by the space rather than by the effect that reads it, so that the UI has somewhere to
@@ -37,7 +37,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public PlayerInput PlayerInput => field ??= new();
 
-    public PlayerThrustEffect PlayerThrust => field ??= new(Player, PlayerInput, 16);
+    public PlayerThrustEffect PlayerThrust => field ??= new(Player, PlayerInput, 24);
 
     /// <summary>
     /// Fills the space: the parts every level has, and then the level's own.

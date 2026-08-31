@@ -14,12 +14,9 @@ public sealed class EmptySpaceLevel : ISporbitsLevel
 
     public void Populate(SporbitsSpace space)
     {
-        space.Puck.Position = new(10, 0);
+        space.Puck.Position = new(5, 0);
 
-        // Measured rather than derived: 1.5 against a circular speed of 1.77 swings between 10 and
-        // 5.6 units apart, which is elliptical enough to read as one and never near touching. Held
-        // for ten minutes of ticks. Arithmetic is what got this wrong before - see AetherGravityEffect.
-        space.Puck.Velocity = new(0, -1.5f);
+        space.Puck.Velocity = new(0, -2.5f);
 
         // Behind the player and square across the puck's path, so that no amount of waiting helps.
         space.Goal = new() { Position = new(-45, 0) };
