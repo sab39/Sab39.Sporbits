@@ -92,6 +92,31 @@ public sealed partial class SporbitsShell
         this.needsFocus = true;
     }
 
+    /// <summary>
+    /// Abandoning a game part-way through, which lands in the same place finishing one does.
+    /// </summary>
+    /// <remarks>
+    /// No notice on the way out, unlike a game that ended on its own: there is no result to read,
+    /// and the player asked to leave.
+    /// </remarks>
+    private void Quit()
+    {
+        this.isPaused = false;
+        this.state = ShellState.ChoosingLevel;
+        this.needsFocus = true;
+    }
+
+    /// <summary>
+    /// Whether the game on screen is paused, which is only ever known here because the game said so.
+    /// </summary>
+    /// <remarks>
+    /// Held out here rather than in SporbitsUI because that component renders once and never again,
+    /// so it is in no position to put anything on screen that changes.
+    /// </remarks>
+    private bool isPaused;
+
+    private void HandlePausedChanged(bool paused) => this.isPaused = paused;
+
     /// <remarks>
     /// Focus is moved by hand into every state that reads the keyboard from an element of its own.
     /// Playing is the one state this leaves alone: SporbitsUI focuses its own container on its

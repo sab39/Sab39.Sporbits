@@ -1,10 +1,9 @@
 Sporbits
 
 - Visuals
-  - Main view is an ellipse
-    - Scaled to browser window width and height
-    - With the edges fading out so it looks borderless
-      - Eg by a black ellipse on the perimeter with an inner shadow
+  * Main view is an ellipse
+    - Full-window view kept, edge fade built but disabled. Findings and what's
+      left open are in sporbits-revival.md.
   - Arrow pointing to goal and puck if offscreen
   - Starfield improvements:
     - Generate programmatically each game
@@ -21,7 +20,8 @@ Sporbits
     - Not spherical, have rotation
 
 - UX
-  - Escape key to quit
+  * Escape key to quit
+  * P to pause
   - Minimap
     - Scale so that player, puck, and starting area always visible
   - Mouse wheel zoom

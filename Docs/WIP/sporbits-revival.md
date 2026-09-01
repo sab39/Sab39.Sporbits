@@ -51,6 +51,39 @@ Framework-level decisions are in Sabric's `Docs/architecture.md`. What's here is
 - **The planet views own their colour** via scoped `.razor.css` files, so each renders
   `class="planet"` and they differ only in their own stylesheet.
 
+## The view fills the window
+
+The SVG covers the browser window rather than fitting inside it — `preserveAspectRatio="xMidYMid
+slice"` — with the camera's extent 16:9 derived from a height of 150. Height first, because the
+height is what the levels were tuned against: deriving the width from it means the widescreen shape
+fills in what used to be letterbox instead of changing how big anything looks.
+
+**The difference from the letterboxed version is dramatic**, which is worth knowing before anyone
+weighs going back. Full-window reads as big, open and unbounded; fitting-with-bars reads as looking
+at a game through a window.
+
+**The camera's `Extent` is therefore an overestimate of what is actually on screen.** A real window
+is never exactly 16:9, so `slice` always crops a sliver off one axis. Anything reasoning about
+visibility from `Extent` — culling, offscreen indicators, a minimap — is working from a rectangle
+slightly larger than reality.
+
+**Covering the window costs frames; the edge fade does not.** The frame rate used to sit pinned at
+whatever the browser caps `requestAnimationFrame` at, and now settles around 80 depending on the
+level. Disabling the fade changes nothing, so the cost is the pixel count.
+
+**The edge fade is built and commented out** in `SporbitsUI.razor.css`. It was meant to make the
+boundary of the view disappear, and it does — but in play it felt more claustrophobic than the plain
+full-window view, which already looks unbounded. Kept as an option rather than deleted.
+
+Its open problem, should it ever be revisited: a radial gradient is the wrong shape for the job.
+What's wanted is a linear gradient traced around the perimeter of the ellipse, so the band is an
+even width the whole way round.
+
+**The motion grid is kept, and no longer a stopgap.** It went in as the crudest thing that would
+restore a sense of motion — the starfield being correct and useless at the same time, since stars
+that far away genuinely don't shift as you move — and it turned out to be liked on its own merits.
+Not set in stone; little here is.
+
 ## Game lifecycle as it stands
 
 The general design question — what start, end and levels should look like in Sabric — is an open
@@ -72,6 +105,24 @@ camera needs the session.
 **`SporbitsUI` is `IDisposable` solely to stop the tick loop.** A scheduled animation frame cannot
 be cancelled, so the loop stops by declining to schedule the next one. Game over already stops it;
 the flag is what makes any *other* way of leaving a game safe.
+
+**Escape leaves a game and P pauses it.** Both act on the press that adds the key to the held set
+rather than on the `keydown` itself, so OS auto-repeat can't toggle anything twice. Escape raises a
+callback and the shell returns to the level menu — the same place a finished game goes, and with no
+notice, because there is no result to read.
+
+**Pausing stops the loop rather than idling it**, so a paused game costs nothing on a battery. Three
+things follow. The frame already in flight when the key was pressed still arrives, and has to
+decline to tick. Nothing measures the pause while it happens, so the gap is discounted on the far
+side — by the first frame back, against the last stamp that actually ticked — which is what makes
+the session see a pause as no elapsed time rather than as one enormous delta. And resuming schedules
+a frame by hand, so `ScheduleGameTick` tracks whether one is already pending: pausing and resuming
+inside a single frame's gap would otherwise leave two callbacks in flight and double the loop for
+good.
+
+A paused game is indistinguishable on screen from a hung one, so `SporbitsUI` announces the change
+rather than displaying it — it renders once and never again — and the shell puts a badge in a
+corner. Deliberately a corner rather than an overlay: pausing is mostly for looking at the game.
 
 `Outcome` lives on the space because winning and losing are things that happen in one; the session
 reads it and declines to advance, whatever keeps calling `Tick`. An enum rather than a bool, because a
@@ -233,7 +284,8 @@ the collection, so spawning and despawning work without the root ever rendering 
 
 **There is a start screen, a level menu and a game over.** `SporbitsShell` wraps everything, a game
 and its view are built when a level is picked, and winning or losing freezes the game behind a notice
-that fades in and then goes back to the menu on a click or a key.
+that fades in and then goes back to the menu on a click or a key. A game in progress can also be
+paused with P or abandoned with Escape.
 
 **Three levels exist**: empty space, a solar system, and an asteroid stream, all of them with a goal.
 Between them they are what put `Goal`, `Sun`, `ObstaclePlanet` and the rule concept in.

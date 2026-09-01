@@ -20,7 +20,16 @@
     }
     else
     {
-        <SporbitsUI Level="this.level" OnGameOver="HandleGameOver" />
+        <SporbitsUI Level="this.level" OnGameOver="HandleGameOver" OnQuit="Quit"
+                    OnPausedChanged="HandlePausedChanged" />
+    }
+
+    @* A corner badge rather than an overlay, because pausing is mostly for looking at the game -
+       covering it up would defeat the point. The pulse is what keeps a small, still label from
+       being missed. *@
+    @if (this.isPaused)
+    {
+        <div class="sporbits-paused">Paused</div>
     }
 
     @if (this.state is ShellState.GameOver)

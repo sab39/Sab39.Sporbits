@@ -6,15 +6,52 @@
     margin: 0;
 }
 
+/* Both fill the window, because the SVG covers it rather than fitting inside it - see the viewBox
+   remarks in the code-behind. Nothing is centred or letterboxed any more; preserveAspectRatio does
+   the scaling, and the SVG viewport clips whichever axis overflows. */
 .sporbits-game-container {
-    display: flex;
-    justify-content: center;
+    position: absolute;
+    inset: 0;
 }
 
 svg {
-    max-height: 100vh;
-    margin-left: auto;
-    margin-right: auto;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Currently off - the background below is commented out, so this element paints nothing. It works,
+   but in play it read as more claustrophobic than the plain full-window view, which already looks
+   open and unbounded. Kept a single uncomment away rather than deleted. The rest of this comment is
+   about what it does when it is on.
+
+   Painted over the scene rather than masking it. What a mask would uncover at the edges and what
+   this paints there are the same black, so the cheaper of the two wins: no layer promotion, no
+   second surface, just one blended box. The point is not a vignette but the absence of a boundary -
+   space should look like it carries on past the window rather than stopping at it.
+
+   closest-side rather than the default farthest-corner, so 100% is where the ellipse meets the
+   middle of each window edge rather than the corners; that is what the stop percentages are worth
+   reading against. Two things the numbers are trying to do, for whoever tunes them next:
+
+   - Hold fully clear and then ramp, rather than a straight two-stop fade. An even ramp reads as a
+     band with an edge to it instead of as distance.
+   - Finish before 100%, leaving a margin of true black inside the window edge. A star still faintly
+     visible when it meets the frame gets cut off by a perfectly straight line, which is precisely
+     the boundary this exists to hide.
+
+   Worth tuning in motion rather than in a still: the effect is mostly carried by things dissolving
+   as they drift out, so if the band is narrow next to how fast they cross it, they still pop. */
+.sporbits-edge-fade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /*    background: radial-gradient(ellipse closest-side at center,
+        rgb(0 0 0 / 0) 75%,
+        rgb(0 0 0 / 0.5) 90%,
+        rgb(0 0 0 / 0.9) 97%,
+        rgb(0 0 0 / 1) 99%);
+    */
 }
 
 circle {

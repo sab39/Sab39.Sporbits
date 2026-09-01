@@ -1,10 +1,10 @@
 <div class="sporbits-container" @ref="containerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
-    <StatsPanel Session="session" PressedKeys="pressedKeys" />
     <div class="sporbits-game-container">
-        @* The viewBox is the static half - how big a window, and how it letterboxes - so the root
-           still renders once and never again. Everything that moves is inside a CameraLayer, which
-           invalidates itself. *@
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="@viewBox" style="aspect-ratio: @aspectRatio">
+        @* The viewBox is the static half - how big a window, and that it covers rather than fits -
+           so the root still renders once and never again. Everything that moves is inside a
+           CameraLayer, which invalidates itself. *@
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="@viewBox"
+             preserveAspectRatio="xMidYMid slice">
             <Starfield Camera="camera" />
             <MotionGrid Camera="camera" />
             <CameraLayer Camera="camera">
@@ -12,4 +12,11 @@
             </CameraLayer>
         </svg>
     </div>
+
+    @* After the game and before the stats, because paint order is the whole mechanism: everything
+       meant to fade goes above this, and everything meant to stay legible goes below it. Screen
+       furniture still to come - offscreen indicators, a minimap - belongs on the stats side. *@
+    <div class="sporbits-edge-fade"></div>
+
+    <StatsPanel Session="session" PressedKeys="pressedKeys" />
 </div>

@@ -46,6 +46,36 @@
     outline: none;
 }
 
+/* Top left because the stats panel has the top right, and both bottom corners are worth keeping
+   free. Amber so it reads as neither of the two colours a finished game uses. */
+.sporbits-paused {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.4rem 1.1rem;
+    background-color: rgb(40 40 48 / 0.85);
+    color: #fc8;
+    border: 2px solid #fc8;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: sporbits-pulse 1.6s ease-out infinite;
+}
+
+/* A halo growing out of the badge and fading as it goes, rather than the badge itself changing:
+   the thing that moves stays outside the label, so the label stays readable throughout. */
+@keyframes sporbits-pulse {
+    from {
+        box-shadow: 0 0 0 0 rgb(255 204 136 / 0.7);
+    }
+
+    to {
+        box-shadow: 0 0 0 1.25rem rgb(255 204 136 / 0);
+    }
+}
+
 .sporbits-game-over {
     position: absolute;
     inset: 0;
