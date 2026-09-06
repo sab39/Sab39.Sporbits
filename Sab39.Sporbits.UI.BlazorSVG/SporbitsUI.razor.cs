@@ -153,8 +153,24 @@ public sealed partial class SporbitsUI : IDisposable
         switch (args.Code)
         {
             case "KeyP": TogglePause(); break;
+            case "KeyG": ToggleGravity(); break;
+            case "KeyR": this.frames.ResetAverages(); break;
             case "Escape": OnQuit.InvokeAsync(); break;
         }
+    }
+
+    /// <remarks>
+    /// A diagnostic, not a mechanic. Gravity is the only thing in a space costing anything per pair
+    /// of objects, so turning it off is how to tell a frame rate that gravity is responsible for from
+    /// one it isn't - and leaving it off is not a game, since nothing orbits anything.
+    ///
+    /// Deliberately does not touch the averages. Reading what the toggle did means resetting them
+    /// separately, once, at whichever point the comparison is meant to start from.
+    /// </remarks>
+    private void ToggleGravity()
+    {
+        var gravity = this.session.CurrentSpace.Gravity;
+        gravity.IsEnabled = !gravity.IsEnabled;
     }
 
     private void OnKeyUp(KeyboardEventArgs args) => this.pressedKeys.Remove(args.Code);
