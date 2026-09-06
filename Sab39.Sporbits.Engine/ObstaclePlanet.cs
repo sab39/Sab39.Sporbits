@@ -5,10 +5,10 @@ namespace Sab39.Sporbits.Engine;
 /// when you got there.
 /// </summary>
 /// <remarks>
-/// One type for both rather than an Asteroid as well, because nothing tells them apart - a size and
-/// a place is the whole of the difference. This is the field of grey planets PlainPlanetView was
-/// kept for.
+/// Unsealed for <see cref="Asteroid"/>, which is the one thing that has turned out to tell them
+/// apart. Anything that is only in the way and has nothing else to say is still one of these. This is
+/// the field of grey planets PlainPlanetView was kept for.
 ///
 /// Partial because the Accept override is generated. Nothing else is expected in the other part.
 /// </remarks>
-public sealed partial class ObstaclePlanet : PlanetBase;
+public partial class ObstaclePlanet : PlanetBase;

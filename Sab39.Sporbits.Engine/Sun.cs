@@ -14,6 +14,8 @@ namespace Sab39.Sporbits.Engine;
 /// </remarks>
 public sealed partial class Sun : PlanetBase
 {
+    public override bool IsGravitySubject => false;
+
     public Sun()
     {
         BodyType = BodyType.Static;

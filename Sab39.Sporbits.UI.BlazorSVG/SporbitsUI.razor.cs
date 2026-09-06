@@ -154,9 +154,20 @@ public sealed partial class SporbitsUI : IDisposable
         {
             case "KeyP": TogglePause(); break;
             case "KeyG": ToggleGravity(); break;
-            case "KeyR": this.frames.ResetAverages(); break;
+            case "KeyR": ResetAverages(); break;
             case "Escape": OnQuit.InvokeAsync(); break;
         }
+    }
+
+    /// <remarks>
+    /// The effect timings go with the frame averages, so that R means one thing: everything on the
+    /// stats panel now measures from here. That is what makes it usable either side of the G toggle.
+    /// </remarks>
+    private void ResetAverages()
+    {
+        this.frames.ResetAverages();
+
+        foreach (var effect in this.session.CurrentSpace.Effects) effect.ResetTimings();
     }
 
     /// <remarks>

@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Sab39.Sabric.Engine;
 using Sab39.Sabric.Engine.Aether;
+using Sab39.Sabric.Engine.Aether.Gravity;
 
 namespace Sab39.Sporbits.Engine;
 
@@ -28,7 +29,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// </remarks>
     public Goal? Goal { get; set; }
 
-    public AetherGravityEffect Gravity => field ??= new(12);
+    public GravityEffect Gravity => field ??= new(12);
 
     /// <summary>
     /// The short-range push that keeps the puck off everything it isn't meant to settle onto.
@@ -79,7 +80,7 @@ public sealed class SporbitsSpace(GameSessionBase session) : AetherSpace(session
     /// planet around a star.
     ///
     /// Assumes gravity falling off with the square of distance, which is what
-    /// <see cref="AetherGravityEffect"/> does - and what Aether's own GravityController does not, for
+    /// <see cref="GravityEffect"/> does - and what Aether's own GravityController does not, for
     /// which see the remarks on that type.
     /// </remarks>
     public float OrbitalSpeed(float centralMass, float orbitingMass, float distance)

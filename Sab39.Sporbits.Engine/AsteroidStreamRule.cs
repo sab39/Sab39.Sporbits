@@ -31,13 +31,25 @@ public sealed class AsteroidStreamRule : ISporbitsRule
 
     public float Radius { get; init; } = 0.6f;
 
+    /// <summary>
+    /// How far clear of the player an asteroid must appear, in world units. Zero lets the stream
+    /// cross the player, which is the game.
+    /// </summary>
+    /// <remarks>
+    /// For measuring rather than for playing: a run that has to last minutes cannot be one the player
+    /// dies thirty seconds into, and a dead player is worse than a stopped clock here - the crash
+    /// leaves it drifting left faster than the stream, so <see cref="Sweep"/> stops firing and the
+    /// asteroid count grows without bound for reasons that have nothing to do with the game.
+    /// </remarks>
+    public float Clearance { get; init; }
+
     /// <remarks>
     /// Unseeded. There is nothing here worth reproducing exactly, and a fixed seed would make every
     /// run of the level identical.
     /// </remarks>
     private readonly Random random = new();
 
-    private readonly List<ObstaclePlanet> spawned = [];
+    private readonly List<Asteroid> spawned = [];
 
     private long sinceLast;
 
@@ -62,11 +74,23 @@ public sealed class AsteroidStreamRule : ISporbitsRule
     {
         var (x, y) = space.Player.Position;
 
-        ObstaclePlanet asteroid = new()
+        // Pushed outward rather than shifted, so a clearance keeps the stream symmetrical about the
+        // player instead of moving it to one side. The drift takes the sign of the offset for the
+        // same reason: away from the player is away on whichever side it started.
+        var offset = Scatter(Spread);
+        var drift = Scatter(3);
+
+        if (Clearance > 0)
+        {
+            offset += float.CopySign(Clearance, offset);
+            drift = float.CopySign(drift, offset);
+        }
+
+        Asteroid asteroid = new()
         {
             Radius = Radius,
-            Position = new(x + Lead, y + Scatter(Spread)),
-            Velocity = new(-Speed, Scatter(3)),
+            Position = new(x + Lead, y + offset),
+            Velocity = new(-Speed, drift),
         };
 
         space.Add(asteroid);

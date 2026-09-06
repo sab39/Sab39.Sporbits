@@ -14,7 +14,8 @@ builder.Services.AddGameObjectViewResolver()
     .AddGeneratedViews()
     // The generator pairs a view with the object named in its base class, which a generic fallback
     // view doesn't name - so the planets that use one say so here.
-    .AddPlanetView<ObstaclePlanet>();
+    .AddPlanetView<ObstaclePlanet>()
+    .AddPlanetView<Asteroid>();
 
 // Registration order is menu order.
 builder.Services.AddSporbitsLevel<EmptySpaceLevel>()

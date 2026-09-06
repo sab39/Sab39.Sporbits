@@ -1,12 +1,14 @@
 using nkast.Aether.Physics2D.Collision.Shapes;
 using nkast.Aether.Physics2D.Dynamics;
 
+using Sab39.Sabric.Engine.Aether.Gravity;
+
 namespace Sab39.Sporbits.Engine;
 
 /// <summary>
 /// A round body with mass. Almost everything in Sporbits is one of these.
 /// </summary>
-public abstract class PlanetBase : SporbitsObjectBase
+public abstract class PlanetBase : SporbitsObjectBase, IGravityObject
 {
     /// <remarks>
     /// The shape exists from construction rather than being built on attach, because Radius and
@@ -59,6 +61,10 @@ public abstract class PlanetBase : SporbitsObjectBase
     /// </remarks>
     public virtual bool RepelsPuck => true;
 
+    public virtual bool IsGravitySource => true;
+    public virtual bool IsGravitySubject => true;
+    public float GravitationalMass => Mass;
+
     /// <remarks>
     /// A planet puts itself into the space's gravity, rather than the space doing it to everything
     /// it holds. Mass is a planet's own claim about itself, and a space is meant to be able to hold
@@ -73,14 +79,12 @@ public abstract class PlanetBase : SporbitsObjectBase
     {
         base.OnAttached();
 
-        Space.Gravity.Add(this);
         if (RepelsPuck) Space.PuckRepulsion.Add(this);
     }
 
     protected override void OnDetached()
     {
         if (RepelsPuck) Space.PuckRepulsion.Remove(this);
-        Space.Gravity.Remove(this);
 
         base.OnDetached();
     }

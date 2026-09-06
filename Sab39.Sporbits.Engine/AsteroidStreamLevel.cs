@@ -11,6 +11,9 @@ public sealed class AsteroidStreamLevel : ISporbitsLevel
 {
     public string Name => "Asteroid stream";
 
+    /// <inheritdoc cref="AsteroidStreamRule.Clearance"/>
+    public float Clearance { get; init; }
+
     public void Populate(SporbitsSpace space)
     {
         space.Orbit(space.Puck, space.Player, 8);
@@ -26,6 +29,7 @@ public sealed class AsteroidStreamLevel : ISporbitsLevel
             IntervalMillis = 900,
             Speed = 25,
             Radius = 0.6f,
+            Clearance = Clearance,
         });
     }
 }

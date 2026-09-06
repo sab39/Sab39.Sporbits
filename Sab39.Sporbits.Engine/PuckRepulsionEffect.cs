@@ -38,7 +38,7 @@ public sealed class PuckRepulsionEffect(PuckPlanet puck, float strength) : Aethe
     /// Closer in it is Strength/s^4.
     /// </summary>
     /// <remarks>
-    /// No mass in it, so this is not comparable with <see cref="AetherGravityEffect.Strength"/>. What
+    /// No mass in it, so this is not comparable with <see cref="GravityEffect.Strength"/>. What
     /// makes the two commensurable is a standoff: solve Strength/s^4 against gravity's own pull at
     /// the same place. At contact that pull is around 17 for an obstacle of radius 1.5, around 9 for
     /// an asteroid of radius 0.6, and around 98 for the sun.
