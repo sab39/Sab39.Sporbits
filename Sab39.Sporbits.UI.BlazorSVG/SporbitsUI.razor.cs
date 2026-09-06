@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Sab39.Sabric.Engine;
 using Sab39.Sabric.UI;
 using Sab39.Sabric.UI.BlazorSVG;
 using Sab39.Sporbits.Engine;
@@ -22,16 +23,22 @@ public sealed partial class SporbitsUI : IDisposable
     public ISporbitsLevel Level { get; set; } = null!;
 
     /// <remarks>
-    /// Built in OnInitialized rather than as field initializers, because both need something that
-    /// isn't there until the parameters are: the session needs the level, and the camera needs the
-    /// session.
+    /// Built in OnInitialized rather than as field initializers, because each needs something that
+    /// isn't there until the parameters are: the session needs the level, and everything after it
+    /// needs the one before.
     /// </remarks>
     private SporbitsSession session = null!;
+
+    private GameClock clock = null!;
+
+    private FrameTracker frames = null!;
+
+    private BrowserFrameDriver driver = null!;
 
     private Camera camera = null!;
 
     /// <summary>
-    /// Raised once, when the game ends, carrying which way it went. The tick loop stops in the same
+    /// Raised once, when the game ends, carrying which way it went. The clock stops in the same
     /// breath, so what stays on screen is the frame the game ended on.
     /// </summary>
     [Parameter]
@@ -97,7 +104,10 @@ public sealed partial class SporbitsUI : IDisposable
     protected override void OnInitialized()
     {
         this.session = new(Level);
-        this.camera = new(this.session) { Extent = new(ViewHeight * 16 / 9, ViewHeight) };
+        this.clock = new(this.session);
+        this.frames = new(this.clock);
+        this.driver = new(this.frames);
+        this.camera = new(this.frames) { Extent = new(ViewHeight * 16 / 9, ViewHeight) };
 
         this.session.Init();
 
@@ -105,6 +115,9 @@ public sealed partial class SporbitsUI : IDisposable
 
         KeyboardInputSource keyboard = new(this.pressedKeys.Keys, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
         this.session.CurrentSpace.PlayerInput.AddInputSource(keyboard);
+
+        this.frames.Framed += HandleFramed;
+        this.frames.GapDetected += HandleGapDetected;
     }
 
     /// <remarks>
@@ -123,7 +136,7 @@ public sealed partial class SporbitsUI : IDisposable
         if (firstRender)
         {
             await this.containerDiv.FocusAsync();
-            ScheduleGameTick();
+            this.driver.Start();
         }
     }
 
@@ -146,109 +159,59 @@ public sealed partial class SporbitsUI : IDisposable
 
     private void OnKeyUp(KeyboardEventArgs args) => this.pressedKeys.Remove(args.Code);
 
-    private bool isPaused;
-
     /// <remarks>
-    /// Resuming has to restart the loop by hand, because pausing stopped it: a paused game costs
-    /// nothing rather than idling through frames it has no use for, which matters most on the
-    /// battery-powered things this is nicest to play on.
+    /// Nothing has to be rescheduled by hand. A resumed clock says it wants time, which is what asks
+    /// for the frame that starts everything moving again - and a paused one stops asking, so the
+    /// loop winds down on its own once nothing else wants frames either.
     /// </remarks>
-    private void TogglePause()
+    private void TogglePause() => SetPaused(!this.clock.IsPaused);
+
+    private void SetPaused(bool isPaused)
     {
-        this.isPaused = !this.isPaused;
-        this.isResuming = !this.isPaused;
+        if (this.clock.IsPaused == isPaused) return;
 
-        OnPausedChanged.InvokeAsync(this.isPaused);
-
-        if (!this.isPaused) ScheduleGameTick();
+        this.clock.IsPaused = isPaused;
+        OnPausedChanged.InvokeAsync(isPaused);
     }
 
-    /// <summary>
-    /// Whether a frame has been asked for and not yet arrived.
-    /// </summary>
     /// <remarks>
-    /// Pausing and resuming again inside a single frame's gap would otherwise ask for a second frame
-    /// while the first is still in flight, and from then on every frame would schedule two - the
-    /// loop doubling with each round trip.
+    /// A gap means a hidden tab or a sleeping machine, and the player is not at the keyboard when
+    /// one of those ends - so the game waits to be resumed rather than starting to play itself while
+    /// they are still finding the window. Sabric only announces the gap; that this is what it means
+    /// is Sporbits' own decision.
     /// </remarks>
-    private bool isFramePending;
+    private void HandleGapDetected(object? sender, EventArgs args) => SetPaused(true);
 
-    private void ScheduleGameTick()
+    private bool isOver;
+
+    /// <remarks>
+    /// Polled once a frame rather than subscribed to, because the outcome is a property of the space
+    /// and an event would have to be raised from inside the tick that set it.
+    /// </remarks>
+    private void HandleFramed(object? sender, EventArgs args)
     {
-        if (this.isDisposed || this.isFramePending) return;
+        if (this.isOver || !this.session.IsOver) return;
 
-        this.isFramePending = true;
-        BrowserEnvironment.RequestAnimationFrame(TriggerGameTick);
+        this.isOver = true;
+        this.clock.IsPaused = true;
+
+        // Nothing to await it with - this is a callback from a frame - and nothing left for this
+        // component to do once it has said so.
+        OnGameOver.InvokeAsync(this.session.Outcome);
     }
 
-    /// <summary>
-    /// How far the browser's clock has run ahead of the game's, which is all the time the game has
-    /// spent paused.
-    /// </summary>
     /// <remarks>
-    /// Subtracted from every stamp the session is handed, so that a pause takes no game time.
-    /// Without it the first tick after a resume would arrive with the whole length of the pause in
-    /// its delta and advance the world by all of it at once. The session measures no time of its own
-    /// - what a tick is worth is the scheduler's to decide - so this is the right side of that line
-    /// for it to happen on.
-    /// </remarks>
-    private long pausedMillis;
-
-    /// <summary>
-    /// The raw browser timestamp of the last frame that actually ticked.
-    /// </summary>
-    /// <remarks>
-    /// Nothing measures the pause while it is happening, since there are no frames to measure it
-    /// with. The gap only has to be known once, on the far side, and this is what it is measured
-    /// against when it gets there.
-    /// </remarks>
-    private long lastStamp;
-
-    private bool isResuming;
-
-    private void TriggerGameTick(double tickStamp)
-    {
-        this.isFramePending = false;
-
-        // The frame already in flight when the pause key was pressed still arrives. Ticking it
-        // would be a free frame of play after the game was meant to have stopped.
-        if (this.isPaused) return;
-
-        var stamp = (long)tickStamp;
-
-        if (this.isResuming)
-        {
-            this.isResuming = false;
-            this.pausedMillis += stamp - this.lastStamp;
-        }
-
-        this.lastStamp = stamp;
-        this.session.Tick(stamp - this.pausedMillis);
-
-        if (this.session.IsOver)
-        {
-            // Nothing to await it with - the loop is driven by a void callback from JS - and
-            // nothing left for this component to do once it has said so.
-            OnGameOver.InvokeAsync(this.session.Outcome);
-            return;
-        }
-
-        ScheduleGameTick();
-    }
-
-    private bool isDisposed;
-
-    /// <remarks>
-    /// A scheduled animation frame cannot be cancelled, so the loop is stopped by declining to
-    /// schedule the next one. Without this, a component torn down mid-game would go on ticking a
+    /// The driver stops the loop, and the tracker and the camera release the subscriptions they hold
+    /// to the things above them. Without this, a component torn down mid-game would go on ticking a
     /// game nothing is rendering.
-    ///
-    /// The camera is disposed here for the same reason it is constructed here: it holds a
-    /// subscription to the session, and this component is what owns its lifetime.
     /// </remarks>
     public void Dispose()
     {
-        this.isDisposed = true;
+        this.frames.Framed -= HandleFramed;
+        this.frames.GapDetected -= HandleGapDetected;
+
+        this.driver.Dispose();
         this.camera.Dispose();
+        this.frames.Dispose();
     }
 }

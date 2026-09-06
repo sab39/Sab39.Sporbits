@@ -2,13 +2,17 @@
    themselves, so nothing here re-renders when either of them changes. *@
 <div class="sporbits-stats">
     <PressedKeysView PressedKeys="PressedKeys" />
-    <GameStatsView Session="Session" />
+    <GameStatsView Session="Session" Tracker="Tracker" />
 </div>
 
 @code {
     [Parameter]
     [EditorRequired]
     public GameSessionBase Session { get; set; } = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public FrameTracker Tracker { get; set; } = default!;
 
     [Parameter]
     [EditorRequired]
