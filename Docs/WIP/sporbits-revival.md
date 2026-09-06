@@ -111,6 +111,10 @@ rather than on the `keydown` itself, so OS auto-repeat can't toggle anything twi
 callback and the shell returns to the level menu — the same place a finished game goes, and with no
 notice, because there is no result to read.
 
+The whole of the loop below is being replaced — a fixed simulation timestep with a separate frame
+loop, which moves the pause arithmetic out of this component entirely. See Sabric's
+`Docs/WIP/game-loop.md` before building on any of it.
+
 **Pausing stops the loop rather than idling it**, so a paused game costs nothing on a battery. Three
 things follow. The frame already in flight when the key was pressed still arrives, and has to
 decline to tick. Nothing measures the pause while it happens, so the gap is discounted on the far
