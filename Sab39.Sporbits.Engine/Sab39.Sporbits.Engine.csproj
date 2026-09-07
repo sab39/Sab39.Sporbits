@@ -12,9 +12,6 @@
   </ItemGroup>
 
   <!-- Writes the Accept override into every concrete game object declared here. -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\Sab39.Sabric\Sab39.Sabric.CodeGen\Sab39.Sabric.CodeGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>

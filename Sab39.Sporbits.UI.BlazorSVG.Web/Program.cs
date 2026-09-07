@@ -17,7 +17,7 @@ builder.Services.AddRazorComponents()
 // If anything ever does render here, GameObjectViewResolver's singleton lifetime needs revisiting
 // first: one per server is shared across every connected user, not one per game.
 builder.Services.AddGameObjectViewResolver()
-    .AddGeneratedViews();
+    .AddGameObjectViews();
 
 var app = builder.Build();
 
