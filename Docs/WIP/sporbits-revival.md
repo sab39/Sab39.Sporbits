@@ -87,52 +87,33 @@ Not set in stone; little here is.
 ## Game lifecycle as it stands
 
 The general design question — what start, end and levels should look like in Sabric — is an open
-item in Sabric's architecture doc. What exists now is entirely Sporbits-side:
+item in Sabric's architecture doc. The component that *is* one game is Sabric's `GameUIBase<TSession>`
+and is described there; what follows is only Sporbits' own.
 
-**A game exists only while `SporbitsUI` is in the render tree.** `SporbitsShell` is the outermost
-component and holds a four-state enum: not started, choosing a level, playing, over. `SporbitsUI`
-builds its own `SporbitsSession` around the level it is handed, so rendering it *is* starting a game
-and dropping it out of the tree *is* ending one. Blazor's component lifetime is the entire mechanism —
-there is no reset path, nothing to tear down by hand, and no state that can survive a round trip
-through the menu. Playing and game-over share a render branch, so the last frame stays on screen
+**`SporbitsShell` is the outermost component** and holds a four-state enum: not started, choosing a
+level, playing, over. Playing and game-over share a render branch, so the last frame stays on screen
 behind the notice; only leaving removes the game. Dismissing goes back to the level menu rather than
 the start screen, so replaying is one click.
 
-**The session and the camera are built in `OnInitialized`, not as field initializers**, because each
-needs something a field initializer cannot see: the session needs the `Level` parameter, and the
-camera needs the session.
+The shell is deliberately not a Sabric concept. The lifecycle it implements is a first pass, and
+there is no reason to assume another game's would have this shape at all.
 
-**`SporbitsUI` is `IDisposable` solely to stop the tick loop.** A scheduled animation frame cannot
-be cancelled, so the loop stops by declining to schedule the next one. Game over already stops it;
-the flag is what makes any *other* way of leaving a game safe.
-
-**Escape leaves a game and P pauses it.** Both act on the press that adds the key to the held set
-rather than on the `keydown` itself, so OS auto-repeat can't toggle anything twice. Escape raises a
-callback and the shell returns to the level menu — the same place a finished game goes, and with no
-notice, because there is no result to read.
-
-The whole of the loop below is being replaced — a fixed simulation timestep with a separate frame
-loop, which moves the pause arithmetic out of this component entirely. See Sabric's
-`Docs/WIP/game-loop.md` before building on any of it.
-
-**Pausing stops the loop rather than idling it**, so a paused game costs nothing on a battery. Three
-things follow. The frame already in flight when the key was pressed still arrives, and has to
-decline to tick. Nothing measures the pause while it happens, so the gap is discounted on the far
-side — by the first frame back, against the last stamp that actually ticked — which is what makes
-the session see a pause as no elapsed time rather than as one enormous delta. And resuming schedules
-a frame by hand, so `ScheduleGameTick` tracks whether one is already pending: pausing and resuming
-inside a single frame's gap would otherwise leave two callbacks in flight and double the loop for
-good.
+**Escape leaves a game and P pauses it**, both through `OnKeyPressed`, so OS auto-repeat is already
+filtered out by the time either is reached. Escape raises a callback and the shell returns to the
+level menu — the same place a finished game goes, and with no notice, because there is no result to
+read.
 
 A paused game is indistinguishable on screen from a hung one, so `SporbitsUI` announces the change
 rather than displaying it — it renders once and never again — and the shell puts a badge in a
 corner. Deliberately a corner rather than an overlay: pausing is mostly for looking at the game.
 
+**A gap becomes a real pause.** Sabric only announces that a long stretch of real time passed with no
+frames in it; that this means a hidden tab or a slept laptop, and that the player is not at the
+keyboard when one of those ends, is Sporbits' decision.
+
 `Outcome` lives on the space because winning and losing are things that happen in one; the session
 reads it and declines to advance, whatever keeps calling `Tick`. An enum rather than a bool, because a
-goal makes a win tellable from a loss and the notice has to say which. The UI polls it after each tick
-rather than subscribing: the tick loop is already there, and an event would have to be raised from
-inside `Tick`.
+goal makes a win tellable from a loss and the notice has to say which.
 
 **The gate on dismissing the game-over notice is load-bearing, not decoration.** Crashing while
 holding an arrow key is the normal way to lose, and `keydown` auto-repeats at the OS rate — so an

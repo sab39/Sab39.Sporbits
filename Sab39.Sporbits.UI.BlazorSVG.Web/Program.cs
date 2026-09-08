@@ -1,22 +1,25 @@
-using Sab39.Sabric.UI.BlazorSVG;
+using Sab39.Sporbits.Engine;
+using Sab39.Sporbits.UI.BlazorSVG;
 using Sab39.Sporbits.UI.BlazorSVG.Web.Client;
 using Sab39.Sporbits.UI.BlazorSVG.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Both modes, because which one a game runs under is decided per request rather than per build -
+// see Home.razor. Registering one and rendering the other is a runtime error, so they travel
+// together with their two AddInteractive*RenderMode counterparts below.
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    .AddInteractiveServerComponents();
+
+builder.Services.AddSporbitsGame();
 
 // Unused today: the only interactive component renders on WebAssembly with prerendering off, so
 // nothing is ever rendered in this container. It's here because that is a one-word change away -
 // prerendering is the default - and every render mode except that one needs the seam on this side
 // too. Reusing the client's generated list rather than generating a second one keeps the two
 // containers from disagreeing about what renders what, which is a miserable class of bug.
-//
-// If anything ever does render here, GameObjectViewResolver's singleton lifetime needs revisiting
-// first: one per server is shared across every connected user, not one per game.
-builder.Services.AddGameObjectViewResolver()
+builder.Services.AddSporbitsUI()
     .AddGameObjectViews();
 
 var app = builder.Build();
@@ -40,6 +43,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(Sab39.Sporbits.UI.BlazorSVG.Web.Client._Imports).Assembly);
 
 app.Run();

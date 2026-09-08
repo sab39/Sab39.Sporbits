@@ -1,6 +1,11 @@
 @* Display only: the shared box, and which readouts go in it. Both children invalidate
    themselves, so nothing here re-renders when either of them changes. *@
 <div class="sporbits-stats">
+    @* Which runtime is actually running the engine, and so the frame of reference for every number
+       under it: interpreted WebAssembly in the browser, or real .NET on the server with the frames
+       arriving over a connection. Constant for the life of the panel, which is why it belongs here
+       rather than in a readout that re-renders. *@
+    <div>Engine: @RendererInfo.Name</div>
     <PressedKeysView PressedKeys="PressedKeys" />
     <GameStatsView Session="Session" Tracker="Tracker" />
 </div>

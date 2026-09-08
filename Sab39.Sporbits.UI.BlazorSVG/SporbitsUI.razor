@@ -1,4 +1,6 @@
-<div class="sporbits-container" @ref="containerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
+@inherits GameUIBase<SporbitsSession>
+
+<div class="sporbits-container" @ref="ContainerDiv" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" tabindex="0">
     <div class="sporbits-game-container">
         @* The viewBox is the static half - how big a window, and that it covers rather than fits -
            so the root still renders once and never again. Everything that moves is inside a
@@ -8,7 +10,7 @@
             <Starfield Camera="camera" />
             <MotionGrid Camera="camera" />
             <CameraLayer Camera="camera">
-                <GameObjectsView Items="session.CurrentSpace.GameObjects" />
+                <GameObjectsView Items="Session.CurrentSpace.GameObjects" />
             </CameraLayer>
         </svg>
     </div>
@@ -18,5 +20,5 @@
        furniture still to come - offscreen indicators, a minimap - belongs on the stats side. *@
     <div class="sporbits-edge-fade"></div>
 
-    <StatsPanel Session="session" Tracker="frames" PressedKeys="pressedKeys" />
+    <StatsPanel Session="Session" Tracker="Frames" PressedKeys="PressedKeys" />
 </div>

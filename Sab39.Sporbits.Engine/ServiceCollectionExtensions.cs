@@ -7,6 +7,19 @@ public static class ServiceCollectionExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
+        /// Registers the game itself: every level Sporbits ships, in menu order.
+        /// </summary>
+        /// <remarks>
+        /// What a host needs to have a game at all, and nothing about how it is displayed - a
+        /// frontend that was not Blazor at all would want exactly this line and none of the one
+        /// next to it. Adding a level to Sporbits is a line here rather than a line in every host.
+        /// </remarks>
+        public IServiceCollection AddSporbitsGame()
+            => services.AddSporbitsLevel<EmptySpaceLevel>()
+                .AddSporbitsLevel<AsteroidStreamLevel>()
+                .AddSporbitsLevel<SolarSystemLevel>();
+
+        /// <summary>
         /// Adds a level to the game. Registration order is the order they appear on the menu.
         /// </summary>
         /// <remarks>

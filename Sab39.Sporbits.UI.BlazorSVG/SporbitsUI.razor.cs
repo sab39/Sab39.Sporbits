@@ -6,14 +6,11 @@ using Sab39.Sabric.UI.BlazorSVG;
 using Sab39.Sporbits.Engine;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Sab39.Sporbits.UI.BlazorSVG;
 
-public sealed partial class SporbitsUI : IDisposable
+public sealed partial class SporbitsUI : GameUIBase<SporbitsSession>
 {
-    private ElementReference containerDiv;
-
     /// <summary>
     /// What this game is a game of. Rendering this component is what starts it, so the level has to
     /// be known before there is anything on screen.
@@ -21,19 +18,6 @@ public sealed partial class SporbitsUI : IDisposable
     [Parameter]
     [EditorRequired]
     public ISporbitsLevel Level { get; set; } = null!;
-
-    /// <remarks>
-    /// Built in OnInitialized rather than as field initializers, because each needs something that
-    /// isn't there until the parameters are: the session needs the level, and everything after it
-    /// needs the one before.
-    /// </remarks>
-    private SporbitsSession session = null!;
-
-    private GameClock clock = null!;
-
-    private FrameTracker frames = null!;
-
-    private BrowserFrameDriver driver = null!;
 
     private Camera camera = null!;
 
@@ -60,12 +44,10 @@ public sealed partial class SporbitsUI : IDisposable
     /// <remarks>
     /// A paused game is indistinguishable on screen from a hung one, so something outside has to be
     /// able to say so. It is announced rather than displayed here because this component renders
-    /// once and then holds still - see <see cref="ShouldRender"/>.
+    /// once and then holds still.
     /// </remarks>
     [Parameter]
     public EventCallback<bool> OnPausedChanged { get; set; }
-
-    private readonly PressedKeys pressedKeys = new();
 
     /// <summary>
     /// How tall a slice of the world the camera shows, in world units. The width follows from it at
@@ -101,56 +83,41 @@ public sealed partial class SporbitsUI : IDisposable
 
     private Vector2 extent => this.camera.Extent;
 
+    protected override SporbitsSession CreateSession() => new(Level);
+
+    protected override bool IsGameOver => Session.IsOver;
+
+    // Nothing to await it with - this is a callback from a frame - and nothing left for this
+    // component to do once it has said so.
+    protected override void NotifyGameOver() => OnGameOver.InvokeAsync(Session.Outcome);
+
+    /// <remarks>
+    /// The camera needs the frame tracker the base built, and the follow behaviour needs a player,
+    /// which is there because the base has already run the level's Populate.
+    /// </remarks>
     protected override void OnInitialized()
     {
-        this.session = new(Level);
-        this.clock = new(this.session);
-        this.frames = new(this.clock);
-        this.driver = new(this.frames);
-        this.camera = new(this.frames) { Extent = new(ViewHeight * 16 / 9, ViewHeight) };
+        base.OnInitialized();
 
-        this.session.Init();
-
-        this.camera.Behaviour = new FollowBehaviour(this.session.CurrentSpace.Player);
-
-        KeyboardInputSource keyboard = new(this.pressedKeys.Keys, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
-        this.session.CurrentSpace.PlayerInput.AddInputSource(keyboard);
-
-        this.frames.Framed += HandleFramed;
-        this.frames.GapDetected += HandleGapDetected;
-    }
-
-    /// <remarks>
-    /// The root renders once and then holds still, for good. Every part of it that changes is a
-    /// child component that invalidates itself - the object list included, which is why this can be
-    /// a flat false rather than something that has to notice a spawn. What it suppresses is the
-    /// render Blazor raises automatically after the key handlers below, which would otherwise take
-    /// the whole tree down with it at the OS key-repeat rate.
-    /// </remarks>
-    protected override bool ShouldRender() => false;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
+        this.camera = new(Frames)
         {
-            await this.containerDiv.FocusAsync();
-            this.driver.Start();
-        }
+            Extent = new(ViewHeight * 16 / 9, ViewHeight),
+            Behaviour = new FollowBehaviour(Session.CurrentSpace.Player),
+        };
+
+        KeyboardInputSource keyboard = new(PressedKeys.Keys, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
+        Session.CurrentSpace.PlayerInput.AddInputSource(keyboard);
+
+        Frames.GapDetected += HandleGapDetected;
     }
 
     /// <remarks>
-    /// The keys that do something once, rather than for as long as they are held, are read from the
-    /// press that adds the code to the set and not from the ones after it. keydown auto-repeats
-    /// while a key is down, and Add returning false is exactly "this is a repeat", so a toggle
-    /// without that gate would flicker at the OS repeat rate.
+    /// The base has already filtered out OS auto-repeat, so a toggle here fires once per press
+    /// rather than at the repeat rate.
     /// </remarks>
-    private void OnKeyDown(KeyboardEventArgs args)
+    protected override void OnKeyPressed(string code)
     {
-        if (!this.pressedKeys.Add(args.Code)) return;
-
-        switch (args.Code)
+        switch (code)
         {
             case "KeyP": TogglePause(); break;
             case "KeyG": ToggleGravity(); break;
@@ -165,9 +132,9 @@ public sealed partial class SporbitsUI : IDisposable
     /// </remarks>
     private void ResetAverages()
     {
-        this.frames.ResetAverages();
+        Frames.ResetAverages();
 
-        foreach (var effect in this.session.CurrentSpace.Effects) effect.ResetTimings();
+        foreach (var effect in Session.CurrentSpace.Effects) effect.ResetTimings();
     }
 
     /// <remarks>
@@ -180,24 +147,22 @@ public sealed partial class SporbitsUI : IDisposable
     /// </remarks>
     private void ToggleGravity()
     {
-        var gravity = this.session.CurrentSpace.Gravity;
+        var gravity = Session.CurrentSpace.Gravity;
         gravity.IsEnabled = !gravity.IsEnabled;
     }
-
-    private void OnKeyUp(KeyboardEventArgs args) => this.pressedKeys.Remove(args.Code);
 
     /// <remarks>
     /// Nothing has to be rescheduled by hand. A resumed clock says it wants time, which is what asks
     /// for the frame that starts everything moving again - and a paused one stops asking, so the
     /// loop winds down on its own once nothing else wants frames either.
     /// </remarks>
-    private void TogglePause() => SetPaused(!this.clock.IsPaused);
+    private void TogglePause() => SetPaused(!Clock.IsPaused);
 
     private void SetPaused(bool isPaused)
     {
-        if (this.clock.IsPaused == isPaused) return;
+        if (Clock.IsPaused == isPaused) return;
 
-        this.clock.IsPaused = isPaused;
+        Clock.IsPaused = isPaused;
         OnPausedChanged.InvokeAsync(isPaused);
     }
 
@@ -209,36 +174,16 @@ public sealed partial class SporbitsUI : IDisposable
     /// </remarks>
     private void HandleGapDetected(object? sender, EventArgs args) => SetPaused(true);
 
-    private bool isOver;
-
     /// <remarks>
-    /// Polled once a frame rather than subscribed to, because the outcome is a property of the space
-    /// and an event would have to be raised from inside the tick that set it.
+    /// The base stops the loop and releases what it built; the gap subscription and the camera are
+    /// this component's own. Base first, so the loop is stopped before anything it might still be
+    /// driving goes away.
     /// </remarks>
-    private void HandleFramed(object? sender, EventArgs args)
+    public override async ValueTask DisposeAsync()
     {
-        if (this.isOver || !this.session.IsOver) return;
+        await base.DisposeAsync();
 
-        this.isOver = true;
-        this.clock.IsPaused = true;
-
-        // Nothing to await it with - this is a callback from a frame - and nothing left for this
-        // component to do once it has said so.
-        OnGameOver.InvokeAsync(this.session.Outcome);
-    }
-
-    /// <remarks>
-    /// The driver stops the loop, and the tracker and the camera release the subscriptions they hold
-    /// to the things above them. Without this, a component torn down mid-game would go on ticking a
-    /// game nothing is rendering.
-    /// </remarks>
-    public void Dispose()
-    {
-        this.frames.Framed -= HandleFramed;
-        this.frames.GapDetected -= HandleGapDetected;
-
-        this.driver.Dispose();
+        Frames.GapDetected -= HandleGapDetected;
         this.camera.Dispose();
-        this.frames.Dispose();
     }
 }
